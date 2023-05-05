@@ -7,4 +7,6 @@ public protocol HBDatabaseService {
         logger: Logger,
         eventLoop: EventLoop
     ) -> HBDatabase
+    
+    func shutdown() throws 
 }

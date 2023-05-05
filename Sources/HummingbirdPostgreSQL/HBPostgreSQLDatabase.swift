@@ -1,6 +1,7 @@
 import HummingbirdDatabase
 import NIOCore
 import Logging
+import PostgresNIO
 
 struct HBPostgreSQLDatabase: HBDatabase {
     
@@ -8,10 +9,10 @@ struct HBPostgreSQLDatabase: HBDatabase {
     let logger: Logger
     let eventLoop: EventLoop
     
-    func getConnectionPool() async throws {
+    func execute<T>(
+        _ block: @escaping ((PostgresConnection) async throws -> T)
+    ) async throws -> T {
         let pool = service.poolGroup.getConnectionPool(on: eventLoop)
-        let res = try await pool.lease(logger: logger) { connection in
-            return true
-        }
+        return try await pool.lease(logger: logger, process: block)
     }
 }

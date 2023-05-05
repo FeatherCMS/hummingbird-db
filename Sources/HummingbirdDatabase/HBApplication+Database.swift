@@ -9,7 +9,9 @@ public extension HBApplication.Services {
             get(\.services.db, "Database service is not configured")
         }
         nonmutating set {
-            set(\.services.db, newValue)
+            set(\.services.db, newValue) { service in
+                try service.shutdown()
+            }
         }
     }
 }

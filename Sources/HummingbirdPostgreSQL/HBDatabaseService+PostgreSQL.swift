@@ -3,25 +3,18 @@ import HummingbirdServices
 import HummingbirdDatabase
 import Logging
 import NIOCore
+import PostgresNIO
 
 public extension HBApplication.Services {
 
     func setUpPostgreSQLDatabase(
-        host: String = "localhost",
-        port: Int = 5432,
-        user: String = "postgres",
-        pass: String = "nincs",
-        database: String = "postgres",
-        maxConnections: Int = System.coreCount,
+        configuration: PostgresConnection.Configuration,
+        maxConnections: Int = 100,
         eventLoopGroup: EventLoopGroup,
         logger: Logger
     ) {
         db = HBPostgreSQLDatabaseService(
-            host: host,
-            port: port,
-            user: user,
-            pass: pass,
-            database: database,
+            configuration: configuration,
             maxConnections: maxConnections,
             eventLoopGroup: eventLoopGroup,
             logger: logger

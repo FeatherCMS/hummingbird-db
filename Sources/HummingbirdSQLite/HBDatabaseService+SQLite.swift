@@ -7,8 +7,8 @@ import SQLiteNIO
 public extension HBApplication.Services {
 
     func setUpSQLiteDatabase(
-        storage: SQLiteConnection.Storage = .memory,
-        maxConnections: Int = 1,
+        storage: SQLiteConnection.Storage,
+        maxConnections: Int = 10,
         threadPool: NIOThreadPool,
         eventLoopGroup: EventLoopGroup,
         logger: Logger

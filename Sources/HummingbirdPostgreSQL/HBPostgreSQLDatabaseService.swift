@@ -2,32 +2,20 @@ import NIO
 import Logging
 import Hummingbird
 import HummingbirdDatabase
+import PostgresNIO
 
 struct HBPostgreSQLDatabaseService: HBDatabaseService {
     
     let poolGroup: HBConnectionPoolGroup<HBPostgreSQLConnectionSource>
     
     init(
-        host: String,
-        port: Int,
-        user: String,
-        pass: String,
-        database: String,
+        configuration: PostgresConnection.Configuration,
         maxConnections: Int,
         eventLoopGroup: EventLoopGroup,
         logger: Logger
     ) {
         self.poolGroup = .init(
-            source: .init(
-                configuration: .init(
-                    host: host,
-                    port: port,
-                    username: "postgres",
-                    password: "nincs",
-                    database: "",
-                    tls: .disable
-                )
-            ),
+            source: .init(configuration: configuration),
             maxConnections: maxConnections,
             eventLoopGroup: eventLoopGroup,
             logger: logger
