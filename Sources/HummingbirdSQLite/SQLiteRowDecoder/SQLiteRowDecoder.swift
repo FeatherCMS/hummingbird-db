@@ -90,8 +90,8 @@ private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
     let row: SQLiteRow
     var codingPath: [CodingKey] = []
     var allKeys: [Key] {
-        row.allColumns.compactMap {
-            Key.init(stringValue: $0)
+        row.columns.compactMap {
+            Key.init(stringValue: $0.name)
         }
     }
 
@@ -122,15 +122,24 @@ private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
     }
 
     func contains(_ key: Key) -> Bool {
-        row.contains(column: column(for: key))
+        row.column(key.stringValue) != nil
     }
 
     func decodeNil(forKey key: Key) throws -> Bool {
-        try row.decodeNil(column: column(for: key))
+        row.column(key.stringValue)?.isNull ?? false
     }
 
     func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
-        try row.decode(column: column(for: key), as: T.self)
+        guard let data = row.column(key.stringValue) else {
+            throw DecodingError.keyNotFound(
+                key,
+                .init(
+                    codingPath: [key],
+                    debugDescription: "Missing key \(key.stringValue)."
+                )
+            )
+        }
+        return try SQLiteDataDecoder().decode(T.self, from: data)
     }
 
     func nestedContainer<NestedKey: CodingKey>(

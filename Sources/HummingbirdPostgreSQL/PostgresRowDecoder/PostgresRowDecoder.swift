@@ -126,7 +126,7 @@ private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
     }
 
     func decodeNil(forKey key: Key) throws -> Bool {
-        !row.contains(key.stringValue) || row[key.stringValue].bytes == nil
+        !contains(key) || row[key.stringValue].bytes == nil
     }
 
     func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
