@@ -18,7 +18,7 @@ struct HBPostgreSQLDatabase: HBDatabase {
         return try await pool.lease(logger: logger, process: block)
     }
 
-    func execute(_ queries: [String]) async throws {
+    func executeRaw(queries: [String]) async throws {
         try await run { connection in
             for query in queries {
                 _ = try await connection.query(

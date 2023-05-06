@@ -18,36 +18,32 @@ struct HBSQLiteDatabase: HBDatabase {
         return try await pool.lease(logger: logger, process: block)
     }
 
-    func execute(_ queries: [String]) async throws {
-        fatalError()
+    func executeRaw(queries: [String]) async throws {
+        try await run { connection in
+            for query in queries {
+                _ = try await connection.query(
+                    .init(stringLiteral: query)
+                )
+                .get()
+            }
+        }
     }
 
     func executeWithBindings(_ queries: [String]) async throws {
-        fatalError()
+        try await run { connection in
+            for query in queries {
+                _ = try await connection.query(query).get()
+            }
+        }
     }
 
     func execute<T: Decodable>(_ query: String, as: T.Type) async throws -> [T]
     {
-        fatalError()
+        try await run { connection in
+            let decoder = SQLiteRowDecoder()
+            return try await connection.query(query).get().map {
+                try decoder.decode(T.self, from: $0)
+            }
+        }
     }
-
-    //    func query<T: Decodable>(_ sql: String) async throws -> [T] {
-    //        try await execute { connection in
-    //
-    //            let res = try await connection.query(sql).get()
-    //            for row in res {
-    //                //                row.decode(model: <#T##Decodable.Protocol#>, with: <#T##SQLRowDecoder#>)
-    //
-    //            }
-    //            return []
-    //        }
-    //    }
-
-    //    let stream = try await connection.query(
-    //        #"SELECT "id", "title", "order", "url", "completed" FROM todospostgres"#,
-    //        logger: request.logger
-    //    )
-    //    var todos: [Todo] = []
-    //    for try await (id, title, order, url, completed) in stream.decode(
-    //        (UUID, String, Int?, String, Bool?).self,
 }

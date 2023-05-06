@@ -22,6 +22,52 @@ final class HummingbirdSQLiteTests: XCTestCase {
             return XCTFail()
         }
 
+        var xs: [String] = []
+        for _ in 0...10 {
+            let id = UUID()
+            let title = "random title"
+            let url = "lorem ipusm"
+            let order = 1
+            
+            let x =
+            "INSERT INTO todos (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
+            
+            xs.append(x)
+        }
+
+        try await db.executeRaw(queries: [
+            "DROP TABLE IF EXISTS todos",
+
+            """
+            CREATE TABLE
+                todos
+            (
+                "id" uuid PRIMARY KEY,
+                "title" text NOT NULL,
+                "order" integer,
+                "url" text
+            );
+            """,
+
+            """
+            ALTER TABLE
+                todos
+            ADD COLUMN
+                "completed" BOOLEAN
+            DEFAULT FALSE;
+            """,
+        ] + xs)
+
+        //        try await app.db.executeWithBindings([x])
+
+        let todos = try await db.execute(
+            #"SELECT "id", "title", "order", "url", "completed" FROM todos;"#,
+            as: Todo.self
+        )
+
+        print(todos)
+        
+        
         struct SchemaDef: Codable {
             let type: String
             let name: String
@@ -70,4 +116,12 @@ final class HummingbirdSQLiteTests: XCTestCase {
 
         try app.shutdownApplication()
     }
+}
+
+struct Todo: Codable {
+    var id: UUID
+    var title: String
+    var order: Int?
+    var url: String
+    var completed: Bool?
 }

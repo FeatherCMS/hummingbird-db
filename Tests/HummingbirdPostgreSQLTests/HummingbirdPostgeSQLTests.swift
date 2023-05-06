@@ -43,20 +43,26 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             print("sqlite")
         }
 
-        let id = UUID()
-        let title = "random title"
-        let url = "lorem ipusm"
-        let order = 1
+        var xs: [String] = []
+        for _ in 0...10 {
+            let id = UUID()
+            let title = "random title"
+            let url = "lorem ipusm"
+            let order = 1
+            
+            let x =
+            "INSERT INTO todos (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
+            
+            xs.append(x)
+        }
+        print(xs)
 
-        let x =
-            "INSERT INTO todospostgres (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
-
-        try await db.execute([
-            "DROP TABLE todospostgres",
+        try await db.executeRaw(queries: [
+            "DROP TABLE todos",
 
             """
             CREATE TABLE
-                todospostgres
+                todos
             (
                 "id" uuid PRIMARY KEY,
                 "title" text NOT NULL,
@@ -67,30 +73,24 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
 
             """
             ALTER TABLE
-                todospostgres
+                todos
             ADD COLUMN
                 "completed" BOOLEAN
             DEFAULT FALSE;
             """,
-            x,
-        ])
+        ] + xs)
 
         //        try await app.db.executeWithBindings([x])
 
         let todos = try await db.execute(
-            #"SELECT "id", "title", "order", "url", "completed" FROM todospostgres"#,
+            "SELECT * FROM todos",
             as: Todo.self
         )
-
+        
+        // .selectAll("todos")
+        // .insert(Todo())
+        
         print(todos)
-
-        //                    for try await (id, title, order, url, completed) in stream.decode(
-        //                        (UUID, String, Int?, String, Bool?).self,
-        //                        context: .default
-        //                    ) {
-        //                        print(id)
-        //                    }
-        //                    print(stream)
 
         try app.shutdownApplication()
     }
