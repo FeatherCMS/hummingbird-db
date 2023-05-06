@@ -1,7 +1,7 @@
 import Foundation
 import PostgresNIO
 
-struct PostgresRowDecoder {
+struct PostgreSQLRowDecoder {
 
     enum KeyDecodingStrategy {
         case useDefaultKeys
@@ -43,7 +43,7 @@ private enum RowDecoderError: Error {
 
 private struct RowDecoderOptions {
     let prefix: String?
-    let keyDecodingStrategy: PostgresRowDecoder.KeyDecodingStrategy
+    let keyDecodingStrategy: PostgreSQLRowDecoder.KeyDecodingStrategy
 }
 
 private struct RowDecoder: Decoder {
@@ -131,7 +131,7 @@ private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
 
     func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
         let data = row[data: key.stringValue]
-        let dec = PostgresDataDecoder()
+        let dec = PostgreSQLDataDecoder()
         return try dec.decode(T.self, from: data)
     }
 

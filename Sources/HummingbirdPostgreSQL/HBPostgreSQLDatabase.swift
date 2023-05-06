@@ -47,7 +47,7 @@ struct HBPostgreSQLDatabase: HBDatabase {
                 .init(stringLiteral: query),
                 logger: logger
             )
-            let decoder = PostgresRowDecoder()
+            let decoder = PostgreSQLRowDecoder()
             var res: [T] = []
             for try await row in stream {
 
