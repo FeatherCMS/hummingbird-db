@@ -49,36 +49,38 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             let title = "random title"
             let url = "lorem ipusm"
             let order = 1
-            
+
             let x =
-            "INSERT INTO todos (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
-            
+                "INSERT INTO todos (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
+
             xs.append(x)
         }
         print(xs)
 
-        try await db.executeRaw(queries: [
-            "DROP TABLE todos",
+        try await db.executeRaw(
+            queries: [
+                "DROP TABLE todos",
 
-            """
-            CREATE TABLE
-                todos
-            (
-                "id" uuid PRIMARY KEY,
-                "title" text NOT NULL,
-                "order" integer,
-                "url" text
-            );
-            """,
+                """
+                CREATE TABLE
+                    todos
+                (
+                    "id" uuid PRIMARY KEY,
+                    "title" text NOT NULL,
+                    "order" integer,
+                    "url" text
+                );
+                """,
 
-            """
-            ALTER TABLE
-                todos
-            ADD COLUMN
-                "completed" BOOLEAN
-            DEFAULT FALSE;
-            """,
-        ] + xs)
+                """
+                ALTER TABLE
+                    todos
+                ADD COLUMN
+                    "completed" BOOLEAN
+                DEFAULT FALSE;
+                """,
+            ] + xs
+        )
 
         //        try await app.db.executeWithBindings([x])
 
@@ -86,11 +88,16 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             "SELECT * FROM todos",
             as: Todo.self
         )
-        
+
         // .selectAll("todos")
         // .insert(Todo())
-        
+
         print(todos)
+
+        let res = try PostgreSQLEncoder().encode(
+            Todo(id: .init(), title: "foo", url: "bar")
+        )
+        print(res)
 
         try app.shutdownApplication()
     }

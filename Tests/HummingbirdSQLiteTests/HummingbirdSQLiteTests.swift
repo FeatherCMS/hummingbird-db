@@ -28,35 +28,37 @@ final class HummingbirdSQLiteTests: XCTestCase {
             let title = "random title"
             let url = "lorem ipusm"
             let order = 1
-            
+
             let x =
-            "INSERT INTO todos (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
-            
+                "INSERT INTO todos (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
+
             xs.append(x)
         }
 
-        try await db.executeRaw(queries: [
-            "DROP TABLE IF EXISTS todos",
+        try await db.executeRaw(
+            queries: [
+                "DROP TABLE IF EXISTS todos",
 
-            """
-            CREATE TABLE
-                todos
-            (
-                "id" uuid PRIMARY KEY,
-                "title" text NOT NULL,
-                "order" integer,
-                "url" text
-            );
-            """,
+                """
+                CREATE TABLE
+                    todos
+                (
+                    "id" uuid PRIMARY KEY,
+                    "title" text NOT NULL,
+                    "order" integer,
+                    "url" text
+                );
+                """,
 
-            """
-            ALTER TABLE
-                todos
-            ADD COLUMN
-                "completed" BOOLEAN
-            DEFAULT FALSE;
-            """,
-        ] + xs)
+                """
+                ALTER TABLE
+                    todos
+                ADD COLUMN
+                    "completed" BOOLEAN
+                DEFAULT FALSE;
+                """,
+            ] + xs
+        )
 
         //        try await app.db.executeWithBindings([x])
 
@@ -66,8 +68,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
         )
 
         print(todos)
-        
-        
+
         struct SchemaDef: Codable {
             let type: String
             let name: String
@@ -113,6 +114,11 @@ final class HummingbirdSQLiteTests: XCTestCase {
         //            }
         //            //            let ver = try v[0].decode(model: Version.self, with: SQLRowDecoder())
         //        }
+
+        let res = try SQLQueryEncoder().encode(
+            Todo(id: .init(), title: "foo", url: "bar")
+        )
+        print(res)
 
         try app.shutdownApplication()
     }
