@@ -6,7 +6,7 @@ struct MissingColumn: Error {
 }
 
 extension SQLiteRow: DecodableSQLiteRow {
-    
+
     var allColumns: [String] {
         columns.map { $0.name }
     }
@@ -22,11 +22,11 @@ extension SQLiteRow: DecodableSQLiteRow {
         column(name) != nil
     }
 
-    func decode<D: Decodable>(column name: String, as type: D.Type) throws -> D {
+    func decode<D: Decodable>(column name: String, as type: D.Type) throws -> D
+    {
         guard let data = column(name) else {
             throw MissingColumn(name: name)
         }
         return try SQLiteDataDecoder().decode(D.self, from: data)
     }
 }
-

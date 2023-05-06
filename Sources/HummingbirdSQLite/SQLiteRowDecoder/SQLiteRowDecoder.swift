@@ -2,7 +2,7 @@ import Foundation
 import SQLiteNIO
 
 struct SQLiteRowDecoder {
-    
+
     enum KeyDecodingStrategy {
         case useDefaultKeys
         case convertFromSnakeCase
@@ -157,7 +157,7 @@ private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
     func superDecoder(forKey key: Key) throws -> Decoder {
         throw RowDecoderError.nesting
     }
-    
+
     func _convertFromSnakeCase(_ stringKey: String) -> String {
         guard !stringKey.isEmpty else { return stringKey }
 
@@ -200,7 +200,8 @@ private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
             searchRange = lowerCaseRange.upperBound..<searchRange.upperBound
         }
         words.append(wordStart..<searchRange.upperBound)
-        let result = words
+        let result =
+            words
             .map { stringKey[$0].lowercased() }
             .joined(separator: "_")
         return result

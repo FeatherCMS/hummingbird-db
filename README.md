@@ -24,3 +24,4 @@ Database provider services
 - [SQLKit](https://github.com/vapor/sql-kit)
 - [SQLiteKit](https://github.com/vapor/sqlite-kit/tree/main/Sources/SQLiteKit)
 - [FluentSQLiteDriver](https://github.com/vapor/fluent-sqlite-driver)
+- [FluentPostgresDriver](https://github.com/vapor/fluent-postgres-driver)

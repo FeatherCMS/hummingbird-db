@@ -4,8 +4,6 @@ public protocol HBDatabase {
 
     func execute(_ queries: [String]) async throws
     func executeWithBindings(_ queries: [String]) async throws
-        
 
     func execute<T: Decodable>(_ query: String, as: T.Type) async throws -> [T]
 }
-

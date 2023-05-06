@@ -1,10 +1,10 @@
 import Hummingbird
 import HummingbirdDatabase
-@testable import HummingbirdPostgreSQL
 import Logging
 import NIO
 import XCTest
 
+@testable import HummingbirdPostgreSQL
 
 final class HummingbirdPostgreSQLTests: XCTestCase {
 
@@ -35,65 +35,63 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
         guard let db = app.db as? HBPostgreSQLDatabase else {
             return XCTFail()
         }
-        
-        
+
         switch app.db.type {
         case .postgresql:
             print("postgresql")
         case .sqlite:
             print("sqlite")
         }
-        
+
         let id = UUID()
         let title = "random title"
         let url = "lorem ipusm"
         let order = 1
-        
-        let x = "INSERT INTO todospostgres (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
-        
+
+        let x =
+            "INSERT INTO todospostgres (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
+
         try await db.execute([
-        "DROP TABLE todospostgres",
-        
-        """
-        CREATE TABLE
-            todospostgres
-        (
-            "id" uuid PRIMARY KEY,
-            "title" text NOT NULL,
-            "order" integer,
-            "url" text
-        );
-        """,
-        
-        """
-        ALTER TABLE
-            todospostgres
-        ADD COLUMN
-            "completed" BOOLEAN
-        DEFAULT FALSE;
-        """,
-        x
+            "DROP TABLE todospostgres",
+
+            """
+            CREATE TABLE
+                todospostgres
+            (
+                "id" uuid PRIMARY KEY,
+                "title" text NOT NULL,
+                "order" integer,
+                "url" text
+            );
+            """,
+
+            """
+            ALTER TABLE
+                todospostgres
+            ADD COLUMN
+                "completed" BOOLEAN
+            DEFAULT FALSE;
+            """,
+            x,
         ])
-        
-//        try await app.db.executeWithBindings([x])
-        
-        
-        
+
+        //        try await app.db.executeWithBindings([x])
+
         let todos = try await db.execute(
             #"SELECT "id", "title", "order", "url", "completed" FROM todospostgres"#,
             as: Todo.self
         )
 
         print(todos)
-        
-//                    for try await (id, title, order, url, completed) in stream.decode(
-//                        (UUID, String, Int?, String, Bool?).self,
-//                        context: .default
-//                    ) {
-//                        print(id)
-//                    }
-//                    print(stream)
-        
+
+        //                    for try await (id, title, order, url, completed) in stream.decode(
+        //                        (UUID, String, Int?, String, Bool?).self,
+        //                        context: .default
+        //                    ) {
+        //                        print(id)
+        //                    }
+        //                    print(stream)
+
         try app.shutdownApplication()
     }
 }

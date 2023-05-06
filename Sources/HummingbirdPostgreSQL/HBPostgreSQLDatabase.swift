@@ -4,9 +4,7 @@ import NIOCore
 import PostgresNIO
 
 struct HBPostgreSQLDatabase: HBDatabase {
-    
-    
-    
+
     let service: HBPostgreSQLDatabaseService
     let logger: Logger
     let eventLoop: EventLoop
@@ -19,7 +17,7 @@ struct HBPostgreSQLDatabase: HBDatabase {
         let pool = service.poolGroup.getConnectionPool(on: eventLoop)
         return try await pool.lease(logger: logger, process: block)
     }
-    
+
     func execute(_ queries: [String]) async throws {
         try await run { connection in
             for query in queries {
@@ -30,7 +28,7 @@ struct HBPostgreSQLDatabase: HBDatabase {
             }
         }
     }
-    
+
     func executeWithBindings(_ queries: [String]) async throws {
         try await run { connection in
             for query in queries {
@@ -42,7 +40,8 @@ struct HBPostgreSQLDatabase: HBDatabase {
         }
     }
 
-    func execute<T: Decodable>(_ query: String, as: T.Type) async throws -> [T] {
+    func execute<T: Decodable>(_ query: String, as: T.Type) async throws -> [T]
+    {
         try await run { connection in
             let stream = try await connection.query(
                 .init(stringLiteral: query),
@@ -51,9 +50,9 @@ struct HBPostgreSQLDatabase: HBDatabase {
             let decoder = PostgresRowDecoder()
             var res: [T] = []
             for try await row in stream {
-                
+
                 let racRow = row.makeRandomAccess()
-//                print(row, racRow)
+                //                print(row, racRow)
                 let item = try decoder.decode(T.self, from: racRow)
                 res.append(item)
             }

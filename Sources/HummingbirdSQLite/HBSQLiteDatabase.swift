@@ -4,7 +4,6 @@ import NIOCore
 import SQLiteNIO
 
 struct HBSQLiteDatabase: HBDatabase {
-    
 
     let service: HBSQLiteDatabaseService
     let logger: Logger
@@ -18,31 +17,31 @@ struct HBSQLiteDatabase: HBDatabase {
         let pool = service.poolGroup.getConnectionPool(on: eventLoop)
         return try await pool.lease(logger: logger, process: block)
     }
-    
+
     func execute(_ queries: [String]) async throws {
         fatalError()
     }
-    
+
     func executeWithBindings(_ queries: [String]) async throws {
         fatalError()
     }
 
-    func execute<T>(_ query: String, as: T.Type) async throws -> [T] where T : Decodable {
+    func execute<T: Decodable>(_ query: String, as: T.Type) async throws -> [T]
+    {
         fatalError()
     }
 
-
-//    func query<T: Decodable>(_ sql: String) async throws -> [T] {
-//        try await execute { connection in
-//
-//            let res = try await connection.query(sql).get()
-//            for row in res {
-//                //                row.decode(model: <#T##Decodable.Protocol#>, with: <#T##SQLRowDecoder#>)
-//
-//            }
-//            return []
-//        }
-//    }
+    //    func query<T: Decodable>(_ sql: String) async throws -> [T] {
+    //        try await execute { connection in
+    //
+    //            let res = try await connection.query(sql).get()
+    //            for row in res {
+    //                //                row.decode(model: <#T##Decodable.Protocol#>, with: <#T##SQLRowDecoder#>)
+    //
+    //            }
+    //            return []
+    //        }
+    //    }
 
     //    let stream = try await connection.query(
     //        #"SELECT "id", "title", "order", "url", "completed" FROM todospostgres"#,

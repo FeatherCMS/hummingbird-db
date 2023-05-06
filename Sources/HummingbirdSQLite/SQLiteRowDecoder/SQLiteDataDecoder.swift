@@ -27,11 +27,11 @@ struct SQLiteDataDecoder {
 }
 
 private final class DataDecoder: Decoder {
-    
+
     var codingPath: [CodingKey] { [] }
     var userInfo: [CodingUserInfoKey: Any] { [:] }
     let data: SQLiteData
-    
+
     init(data: SQLiteData) {
         self.data = data
     }
@@ -67,13 +67,13 @@ private final class DataDecoder: Decoder {
 }
 
 private struct SingleValueDecoder: SingleValueDecodingContainer {
-    
+
     var codingPath: [CodingKey] {
         decoder.codingPath
     }
-    
+
     let decoder: DataDecoder
-    
+
     init(_ decoder: DataDecoder) {
         self.decoder = decoder
     }
@@ -82,15 +82,15 @@ private struct SingleValueDecoder: SingleValueDecodingContainer {
         decoder.data == .null
     }
 
-    func decode<T>(_ type: T.Type) throws -> T where T: Decodable {
+    func decode<T: Decodable>(_ type: T.Type) throws -> T {
         try SQLiteDataDecoder().decode(T.self, from: decoder.data)
     }
 }
 
 private struct DecoderUnwrapper: Decodable {
-    
+
     let decoder: Decoder
-    
+
     init(from decoder: Decoder) {
         self.decoder = decoder
     }

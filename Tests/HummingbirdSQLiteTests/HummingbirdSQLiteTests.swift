@@ -33,40 +33,40 @@ final class HummingbirdSQLiteTests: XCTestCase {
             let version: String
         }
 
-//
-//        try await db.execute { connection in
-//
-//            try await connection.query(
-//                """
-//                CREATE TABLE groups (
-//                    group_id INTEGER PRIMARY KEY,
-//                    name TEXT NOT NULL
-//                );
-//                """
-//            )
-//            try await connection.query(
-//                """
-//                CREATE TABLE contacts (
-//                    contact_id INTEGER PRIMARY KEY,
-//                    first_name TEXT NOT NULL,
-//                    last_name TEXT NOT NULL,
-//                    email TEXT NOT NULL UNIQUE,
-//                    phone TEXT NOT NULL UNIQUE
-//                );
-//                """
-//            )
-//            //            let v = try await connection.query("select sqlite_version() as version;").get()
-//            let v = try await connection.query(
-//                "select * from sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%';"
-//            ).get()
-//
-//            for i in v {
-//                print(i)
-//                let ver = try SQLiteRowDecoder().decode(SchemaDef.self, from: i)
-//                print(ver)
-//            }
-//            //            let ver = try v[0].decode(model: Version.self, with: SQLRowDecoder())
-//        }
+        //
+        //        try await db.execute { connection in
+        //
+        //            try await connection.query(
+        //                """
+        //                CREATE TABLE groups (
+        //                    group_id INTEGER PRIMARY KEY,
+        //                    name TEXT NOT NULL
+        //                );
+        //                """
+        //            )
+        //            try await connection.query(
+        //                """
+        //                CREATE TABLE contacts (
+        //                    contact_id INTEGER PRIMARY KEY,
+        //                    first_name TEXT NOT NULL,
+        //                    last_name TEXT NOT NULL,
+        //                    email TEXT NOT NULL UNIQUE,
+        //                    phone TEXT NOT NULL UNIQUE
+        //                );
+        //                """
+        //            )
+        //            //            let v = try await connection.query("select sqlite_version() as version;").get()
+        //            let v = try await connection.query(
+        //                "select * from sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%';"
+        //            ).get()
+        //
+        //            for i in v {
+        //                print(i)
+        //                let ver = try SQLiteRowDecoder().decode(SchemaDef.self, from: i)
+        //                print(ver)
+        //            }
+        //            //            let ver = try v[0].decode(model: Version.self, with: SQLRowDecoder())
+        //        }
 
         try app.shutdownApplication()
     }
