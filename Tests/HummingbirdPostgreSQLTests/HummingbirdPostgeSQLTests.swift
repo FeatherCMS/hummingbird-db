@@ -1,19 +1,18 @@
-import XCTest
-import NIO
 import Hummingbird
 import HummingbirdDatabase
 import HummingbirdPostgreSQL
 import Logging
+import NIO
+import XCTest
 
 final class HummingbirdPostgreSQLTests: XCTestCase {
-    
+
     func testExample() async throws {
         let env = ProcessInfo.processInfo.environment
         let app = HBApplication()
 
         var port = 5432
-        if
-            let rawPort = env["PG_PORT"],
+        if let rawPort = env["PG_PORT"],
             let customPort = Int(rawPort)
         {
             port = customPort

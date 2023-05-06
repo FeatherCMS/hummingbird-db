@@ -1,13 +1,13 @@
-import NIO
-import Logging
 import Hummingbird
 import HummingbirdDatabase
+import Logging
+import NIO
 import SQLiteNIO
 
 struct HBSQLiteDatabaseService: HBDatabaseService {
-    
+
     let poolGroup: HBConnectionPoolGroup<HBSQLiteConnectionSource>
-    
+
     init(
         storage: SQLiteConnection.Storage,
         maxConnections: Int,

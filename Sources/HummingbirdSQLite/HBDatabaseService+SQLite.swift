@@ -1,12 +1,12 @@
 import Hummingbird
-import HummingbirdServices
 import HummingbirdDatabase
+import HummingbirdServices
 import Logging
 import SQLiteNIO
 
-public extension HBApplication.Services {
+extension HBApplication.Services {
 
-    func setUpSQLiteDatabase(
+    public func setUpSQLiteDatabase(
         storage: SQLiteConnection.Storage,
         maxConnections: Int = 10,
         threadPool: NIOThreadPool,
