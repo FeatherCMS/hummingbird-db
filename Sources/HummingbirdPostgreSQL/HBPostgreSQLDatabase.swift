@@ -17,6 +17,19 @@ struct HBPostgreSQLDatabase: HBDatabase {
         let pool = service.poolGroup.getConnectionPool(on: eventLoop)
         return try await pool.lease(logger: logger, process: block)
     }
+    
+    func bind(rawQuery: String, bindings: [String: String]) async throws {
+        try await run { connection in
+            
+            
+            
+            "INSERT INTO todos (name, title) VALUES (:name:, :title:)"
+            /// SQLite ? = binding
+            ///
+            ///
+            connection.query(rawQuery, [])
+        }
+    }
 
     func executeRaw(queries: [String]) async throws {
         try await run { connection in

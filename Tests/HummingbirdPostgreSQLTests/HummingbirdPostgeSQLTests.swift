@@ -97,6 +97,9 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
         let res = try PostgreSQLRowEncoder().encode(
             Todo(id: .init(), title: "foo", url: "bar")
         )
+        
+        
+        
         print(res)
 
         try app.shutdownApplication()

@@ -30,6 +30,9 @@ let package = Package(
             .target(name: "HummingbirdDatabase"),
             .product(name: "SQLiteNIO", package: "sqlite-nio"),
         ]),
+        .testTarget(name: "HummingbirdDatabaseTests", dependencies: [
+            .target(name: "HummingbirdDatabase"),
+        ]),
         .testTarget(name: "HummingbirdPostgreSQLTests", dependencies: [
             .target(name: "HummingbirdPostgreSQL"),
         ]),
