@@ -115,7 +115,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
         //            //            let ver = try v[0].decode(model: Version.self, with: SQLRowDecoder())
         //        }
 
-        let res = try SQLQueryEncoder().encode(
+        let res = try SQLiteRowEncoder().encode(
             Todo(id: .init(), title: "foo", url: "bar")
         )
         print(res)
