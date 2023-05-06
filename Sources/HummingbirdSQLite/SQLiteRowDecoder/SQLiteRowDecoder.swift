@@ -22,7 +22,7 @@ struct SQLiteRowDecoder {
 
     func decode<T: Decodable>(
         _ type: T.Type,
-        from row: DecodableSQLiteRow
+        from row: SQLiteRow
     ) throws -> T {
         try T.init(from: RowDecoder(row: row, options: options))
     }
@@ -49,12 +49,12 @@ private struct RowDecoderOptions {
 private struct RowDecoder: Decoder {
 
     let options: RowDecoderOptions
-    let row: DecodableSQLiteRow
+    let row: SQLiteRow
     var codingPath: [CodingKey] = []
     var userInfo: [CodingUserInfoKey: Any] { [:] }
 
     init(
-        row: DecodableSQLiteRow,
+        row: SQLiteRow,
         codingPath: [CodingKey] = [],
         options: RowDecoderOptions
     ) {
@@ -87,7 +87,7 @@ private struct RowDecoder: Decoder {
 private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
 
     let decoder: RowDecoder
-    let row: DecodableSQLiteRow
+    let row: SQLiteRow
     var codingPath: [CodingKey] = []
     var allKeys: [Key] {
         row.allColumns.compactMap {
@@ -97,7 +97,7 @@ private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
 
     init(
         referencing decoder: RowDecoder,
-        row: DecodableSQLiteRow,
+        row: SQLiteRow,
         codingPath: [CodingKey] = []
     ) {
         self.decoder = decoder

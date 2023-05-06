@@ -5,7 +5,7 @@ struct MissingColumn: Error {
     let name: String
 }
 
-extension SQLiteRow: DecodableSQLiteRow {
+extension SQLiteRow {
 
     var allColumns: [String] {
         columns.map { $0.name }
