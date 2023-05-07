@@ -40,7 +40,7 @@ struct PostgreSQLDataDecoder {
         }
         do {
             return try T.init(
-                from: GiftBoxUnwrapDecoder(decoder: self, data: data)
+                from: _Decoder(decoder: self, data: data)
             )
         }
         catch DecodingError.dataCorrupted {
@@ -53,100 +53,100 @@ struct PostgreSQLDataDecoder {
             return try json.decode(T.self, from: jsonData)
         }
     }
+}
 
-    final class GiftBoxUnwrapDecoder: Decoder, SingleValueDecodingContainer {
-        var codingPath: [CodingKey] { [] }
-        var userInfo: [CodingUserInfoKey: Any] { [:] }
+final class _Decoder: Decoder, SingleValueDecodingContainer {
+    var codingPath: [CodingKey] { [] }
+    var userInfo: [CodingUserInfoKey: Any] { [:] }
 
-        let dataDecoder: PostgreSQLDataDecoder
-        let data: PostgresData
+    let dataDecoder: PostgreSQLDataDecoder
+    let data: PostgresData
 
-        init(decoder: PostgreSQLDataDecoder, data: PostgresData) {
-            self.dataDecoder = decoder
-            self.data = data
-        }
+    init(decoder: PostgreSQLDataDecoder, data: PostgresData) {
+        self.dataDecoder = decoder
+        self.data = data
+    }
 
-        func container<Key: CodingKey>(
-            keyedBy type: Key.Type
-        ) throws -> KeyedDecodingContainer<Key> {
+    func container<Key: CodingKey>(
+        keyedBy type: Key.Type
+    ) throws -> KeyedDecodingContainer<Key> {
+        throw DecodingError.dataCorruptedError(
+            in: self,
+            debugDescription: "Dictionary containers must be JSON-encoded"
+        )
+    }
+
+    func unkeyedContainer() throws -> UnkeyedDecodingContainer {
+        guard let array = data.array else {
             throw DecodingError.dataCorruptedError(
                 in: self,
-                debugDescription: "Dictionary containers must be JSON-encoded"
+                debugDescription:
+                    "Non-natively typed arrays must be JSON-encoded"
             )
         }
+        return _UnkeyedDecodingContainer(data: array, dataDecoder: dataDecoder)
+    }
 
-        func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-            guard let array = data.array else {
-                throw DecodingError.dataCorruptedError(
-                    in: self,
-                    debugDescription:
-                        "Non-natively typed arrays must be JSON-encoded"
-                )
-            }
-            return ArrayContainer(data: array, dataDecoder: dataDecoder)
+    func singleValueContainer() throws -> SingleValueDecodingContainer {
+        self
+    }
+
+    func decodeNil() -> Bool {
+        data.value == nil
+    }
+
+    func decode<T: Decodable>(_ type: T.Type) throws -> T {
+        try dataDecoder.decode(T.self, from: data)
+    }
+}
+
+struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
+    let data: [PostgresData]
+    let dataDecoder: PostgreSQLDataDecoder
+    var codingPath: [CodingKey] { [] }
+    var count: Int? { data.count }
+    var isAtEnd: Bool { currentIndex >= data.count }
+    var currentIndex: Int = 0
+
+    mutating func decodeNil() throws -> Bool {
+        if data[currentIndex].value == nil {
+            currentIndex += 1
+            return true
         }
+        return false
+    }
 
-        struct ArrayContainer: UnkeyedDecodingContainer {
-            let data: [PostgresData]
-            let dataDecoder: PostgreSQLDataDecoder
-            var codingPath: [CodingKey] { [] }
-            var count: Int? { data.count }
-            var isAtEnd: Bool { currentIndex >= data.count }
-            var currentIndex: Int = 0
+    mutating func decode<T: Decodable>(_ type: T.Type) throws -> T {
+        let result = try dataDecoder.decode(
+            T.self,
+            from: data[currentIndex]
+        )
+        currentIndex += 1
+        return result
+    }
 
-            mutating func decodeNil() throws -> Bool {
-                if data[currentIndex].value == nil {
-                    currentIndex += 1
-                    return true
-                }
-                return false
-            }
+    mutating func nestedContainer<NewKey: CodingKey>(
+        keyedBy _: NewKey.Type
+    ) throws -> KeyedDecodingContainer<NewKey> {
+        throw DecodingError.dataCorruptedError(
+            in: self,
+            debugDescription: "Data nesting is not supported"
+        )
+    }
 
-            mutating func decode<T: Decodable>(_ type: T.Type) throws -> T {
-                let result = try dataDecoder.decode(
-                    T.self,
-                    from: data[currentIndex]
-                )
-                currentIndex += 1
-                return result
-            }
+    mutating func nestedUnkeyedContainer() throws
+        -> UnkeyedDecodingContainer
+    {
+        throw DecodingError.dataCorruptedError(
+            in: self,
+            debugDescription: "Data nesting is not supported"
+        )
+    }
 
-            mutating func nestedContainer<NewKey: CodingKey>(
-                keyedBy _: NewKey.Type
-            ) throws -> KeyedDecodingContainer<NewKey> {
-                throw DecodingError.dataCorruptedError(
-                    in: self,
-                    debugDescription: "Data nesting is not supported"
-                )
-            }
-
-            mutating func nestedUnkeyedContainer() throws
-                -> UnkeyedDecodingContainer
-            {
-                throw DecodingError.dataCorruptedError(
-                    in: self,
-                    debugDescription: "Data nesting is not supported"
-                )
-            }
-
-            mutating func superDecoder() throws -> Decoder {
-                throw DecodingError.dataCorruptedError(
-                    in: self,
-                    debugDescription: "Data nesting is not supported"
-                )
-            }
-        }
-
-        func singleValueContainer() throws -> SingleValueDecodingContainer {
-            self
-        }
-
-        func decodeNil() -> Bool {
-            data.value == nil
-        }
-
-        func decode<T: Decodable>(_ type: T.Type) throws -> T {
-            try dataDecoder.decode(T.self, from: data)
-        }
+    mutating func superDecoder() throws -> Decoder {
+        throw DecodingError.dataCorruptedError(
+            in: self,
+            debugDescription: "Data nesting is not supported"
+        )
     }
 }

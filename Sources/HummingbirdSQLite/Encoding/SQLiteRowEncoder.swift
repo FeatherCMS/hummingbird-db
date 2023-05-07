@@ -44,7 +44,7 @@ private final class _SingleValueCounter {
     var index: Int = 0
 }
 
-private final class _Encoder: Encoder {
+private final class _Encoder: Encoder, SingleValueEncodingContainer {
 
     let options: SQLiteRowEncoder._Options
     var codingPath: [CodingKey] { [] }
@@ -66,15 +66,20 @@ private final class _Encoder: Encoder {
     }
 
     func unkeyedContainer() -> UnkeyedEncodingContainer {
-        fatalError("Arrays are not supported.")
+        fatalError("Unkeyed containers are not supported.")
     }
 
     func singleValueContainer() -> SingleValueEncodingContainer {
-        _SingleValueEncodingContainer(
-            encoder: self,
-            codingPath: codingPath,
-            index: singleValueIndex
-        )
+        self
+    }
+    
+    func encodeNil() throws {
+        bindings.append((String(singleValueIndex), .null))
+    }
+    
+    func encode<T: Encodable>(_ value: T) throws {
+        let data = try SQLiteDataEncoder().encode(value)
+        bindings.append((String(singleValueIndex), data))
     }
 
     func _convertToSnakeCase(_ stringKey: String) -> String {
@@ -172,13 +177,13 @@ private struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
         keyedBy keyType: NestedKey.Type,
         forKey key: Key
     ) -> KeyedEncodingContainer<NestedKey> {
-        fatalError("Nested objects are not supported.")
+        fatalError("Nested keyed container is not supported.")
     }
 
     mutating func nestedUnkeyedContainer(forKey key: Key)
         -> UnkeyedEncodingContainer
     {
-        fatalError("Nested arrays are not supported.")
+        fatalError("Nested unkeyed container is not supported.")
     }
 
     mutating func superEncoder() -> Encoder {
@@ -190,95 +195,10 @@ private struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
     }
 
     func unkeyedContainer() -> UnkeyedEncodingContainer {
-        fatalError()
+        fatalError("Unkeyed container is not supported.")
     }
 
     func singleValueContainer() -> SingleValueEncodingContainer {
-        fatalError()
-    }
-}
-
-private struct _SingleValueEncodingContainer: SingleValueEncodingContainer {
-
-    let encoder: _Encoder
-    var codingPath: [CodingKey]
-    let index: Int
-    
-    init(encoder: _Encoder, codingPath: [CodingKey], index: Int) {
-        self.encoder = encoder
-        self.codingPath = codingPath
-        self.index = index
-    }
-
-    mutating func encodeNil() throws {
-        encoder.bindings.append((String(index), .null))
-    }
-
-    mutating func encode(_ value: Bool) throws {
-        encoder.bindings.append((String(index), .integer(0)))
-    }
-
-    mutating func encode(_ value: String) throws {
-        encoder.bindings.append((String(index), .text(value)))
-    }
-
-    mutating func encode(_ value: Double) throws {
-        encoder.bindings.append((String(index), .float(value)))
-    }
-
-    mutating func encode(_ value: Float) throws {
-        encoder.bindings.append(
-            (String(index), .float(Double(value)))
-        )
-    }
-
-    mutating func encode(_ value: Int) throws {
-        encoder.bindings.append((String(index), .integer(value)))
-    }
-
-    mutating func encode(_ value: Int8) throws {
-        encoder.bindings.append((String(index), .integer(Int(value))))
-    }
-
-    mutating func encode(_ value: Int16) throws {
-        encoder.bindings.append((String(index), .integer(Int(value))))
-    }
-
-    mutating func encode(_ value: Int32) throws {
-        encoder.bindings.append((String(index), .integer(Int(value))))
-    }
-
-    mutating func encode(_ value: Int64) throws {
-        encoder.bindings.append((String(index), .integer(Int(value))))
-    }
-
-    mutating func encode(_ value: UInt) throws {
-        encoder.bindings.append((String(index), .integer(Int(value))))
-    }
-
-    mutating func encode(_ value: UInt8) throws {
-        encoder.bindings.append((String(index), .integer(Int(value))))
-    }
-
-    mutating func encode(_ value: UInt16) throws {
-        encoder.bindings.append((String(index), .integer(Int(value))))
-    }
-
-    mutating func encode(_ value: UInt32) throws {
-        encoder.bindings.append((String(index), .integer(Int(value))))
-    }
-
-    mutating func encode(_ value: UInt64) throws {
-        encoder.bindings.append((String(index), .integer(Int(value))))
-    }
-
-    mutating func encode<T: Encodable>(_ value: T) throws {
-        throw EncodingError.invalidValue(
-            value,
-            .init(
-                codingPath: codingPath,
-                debugDescription: "Can't encode complex encodable value."
-            )
-        )
+        fatalError("Single value container is not supported.")
     }
 }
