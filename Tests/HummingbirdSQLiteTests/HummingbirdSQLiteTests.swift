@@ -10,12 +10,15 @@ final class HummingbirdSQLiteTests: XCTestCase {
 
     func testExample() async throws {
         let app = HBApplication()
+        
+        var logger = Logger(label: "sqlite-logger")
+        logger.logLevel = .info
 
         app.services.setUpSQLiteDatabase(
             storage: .memory,
             threadPool: app.threadPool,
             eventLoopGroup: app.eventLoopGroup,
-            logger: app.logger
+            logger: logger
         )
 
         guard let db = app.db as? HBSQLiteDatabase else {
@@ -57,68 +60,57 @@ final class HummingbirdSQLiteTests: XCTestCase {
                     "completed" BOOLEAN
                 DEFAULT FALSE;
                 """,
-            ] + xs
+            ]
         )
+        
+        try await app.db.execute(queries: [
+            HBDatabaseQuery(
+                unsafeSQL: #"CREATE TABLE "scores" ("score" INTEGER NOT NULL);"#,
+                bindings: [:]
+            ),
+            HBDatabaseQuery(
+                unsafeSQL: #"INSERT INTO scores (score) VALUES (:1:);"#,
+                bindings: ["1": 1]
+            ),
+        ])
 
-        //        try await app.db.executeWithBindings([x])
-
-        let todos = try await db.execute(
-            #"SELECT "id", "title", "order", "url", "completed" FROM todos;"#,
-            as: Todo.self
+        let newTodo = Todo(
+            id: .init(),
+            title: "yeah",
+            order: 420,
+            url: "spacex.com",
+            completed: true
         )
-
-        print(todos)
-
-        struct SchemaDef: Codable {
-            let type: String
-            let name: String
-            let tbl_name: String
-            let rootpage: Int
-            let sql: String
-        }
-        struct Version: Codable {
-            let version: String
-        }
-
-        //
-        //        try await db.execute { connection in
-        //
-        //            try await connection.query(
-        //                """
-        //                CREATE TABLE groups (
-        //                    group_id INTEGER PRIMARY KEY,
-        //                    name TEXT NOT NULL
-        //                );
-        //                """
-        //            )
-        //            try await connection.query(
-        //                """
-        //                CREATE TABLE contacts (
-        //                    contact_id INTEGER PRIMARY KEY,
-        //                    first_name TEXT NOT NULL,
-        //                    last_name TEXT NOT NULL,
-        //                    email TEXT NOT NULL UNIQUE,
-        //                    phone TEXT NOT NULL UNIQUE
-        //                );
-        //                """
-        //            )
-        //            //            let v = try await connection.query("select sqlite_version() as version;").get()
-        //            let v = try await connection.query(
-        //                "select * from sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%';"
-        //            ).get()
-        //
-        //            for i in v {
-        //                print(i)
-        //                let ver = try SQLiteRowDecoder().decode(SchemaDef.self, from: i)
-        //                print(ver)
-        //            }
-        //            //            let ver = try v[0].decode(model: Version.self, with: SQLRowDecoder())
-        //        }
-
-        let res = try SQLiteRowEncoder().encode(
-            Todo(id: .init(), title: "foo", url: "bar")
+        
+        /// must re-create table, in-memory db messes up this...
+        try await app.db.execute(queries: [
+            HBDatabaseQuery(
+                unsafeSQL: """
+                CREATE TABLE
+                    todos
+                (
+                    "id" uuid PRIMARY KEY,
+                    "title" text NOT NULL,
+                    "order" integer,
+                    "url" text
+                );
+                """,
+                bindings: newTodo
+            ),
+            HBDatabaseQuery(
+                unsafeSQL: """
+                INSERT INTO
+                    `todos` (`id`, `title`, `url`, `order`)
+                VALUES
+                    (:id:, :title:, :url:, :order:)
+                """,
+                bindings: newTodo
+            ),
+        ])
+        
+        try await db.executeRaw(
+            queries: xs
         )
-        print(res)
 
         try app.shutdownApplication()
     }

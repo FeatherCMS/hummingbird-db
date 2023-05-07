@@ -47,11 +47,9 @@ final class HummingbirdDatabaseTests: XCTestCase {
                 bindingQuery += String(c)
             }
         }
-        print(currentIndex, currentBindings.count)
+
         if isOpened || currentIndex - 1 != patterns.count { // strict mode?
             XCTFail("invalid sql query")
         }
-        
-        print(bindingQuery, currentBindings)
     }
 }

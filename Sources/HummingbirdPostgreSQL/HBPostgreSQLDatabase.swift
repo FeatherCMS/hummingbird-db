@@ -17,19 +17,6 @@ struct HBPostgreSQLDatabase: HBDatabase {
         let pool = service.poolGroup.getConnectionPool(on: eventLoop)
         return try await pool.lease(logger: logger, process: block)
     }
-    
-    func bind(rawQuery: String, bindings: [String: String]) async throws {
-        try await run { connection in
-            
-            
-            
-            "INSERT INTO todos (name, title) VALUES (:name:, :title:)"
-            /// SQLite ? = binding
-            ///
-            ///
-            connection.query(rawQuery, [])
-        }
-    }
 
     func executeRaw(queries: [String]) async throws {
         try await run { connection in
@@ -42,11 +29,60 @@ struct HBPostgreSQLDatabase: HBDatabase {
         }
     }
 
-    func executeWithBindings(_ queries: [String]) async throws {
+    private func prepare(
+        query: any HBDatabaseQueryInterface
+    ) throws -> (String, PostgresBindings) {
+        var patterns: [String: PostgresData] = [:]
+        
+        if let b = query.bindings {
+            let res = try PostgreSQLRowEncoder().encode(b)
+            for item in res {
+                patterns[item.0] = item.1
+            }
+        }
+        var bindingQuery = ""
+        var isOpened = false
+        var currentKey = ""
+        var currentIndex = 1
+        var currentBindings = PostgresBindings()
+        
+        for c in query.unsafeSQL {
+            if c == ":" {
+                if isOpened {
+                    bindingQuery += "$"
+                    bindingQuery += String(currentIndex)
+                    if let binding = patterns[currentKey] {
+                        currentBindings.append(binding)
+                    }
+                    else {
+                        currentBindings.append(.null)
+                    }
+                    
+                    currentKey = ""
+                    currentIndex += 1
+                }
+                isOpened = !isOpened
+                continue
+            }
+            if isOpened {
+                currentKey += String(c)
+            }
+            else {
+                bindingQuery += String(c)
+            }
+        }
+        if isOpened {//} || currentIndex - 1 != patterns.count { // strict mode?
+            throw HBDatabaseError.binding
+        }
+        return (bindingQuery, currentBindings)
+    }
+
+    func execute(queries: [any HBDatabaseQueryInterface]) async throws {
         try await run { connection in
             for query in queries {
+                let q = try prepare(query: query)
                 try await connection.query(
-                    .init(stringLiteral: query),
+                    .init(unsafeSQL: q.0, binds: q.1),
                     logger: logger
                 )
             }
@@ -63,9 +99,7 @@ struct HBPostgreSQLDatabase: HBDatabase {
             let decoder = PostgreSQLRowDecoder()
             var res: [T] = []
             for try await row in stream {
-
                 let racRow = row.makeRandomAccess()
-                //                print(row, racRow)
                 let item = try decoder.decode(T.self, from: racRow)
                 res.append(item)
             }

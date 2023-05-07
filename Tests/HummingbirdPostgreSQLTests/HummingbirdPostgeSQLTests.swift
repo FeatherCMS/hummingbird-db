@@ -55,7 +55,6 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
 
             xs.append(x)
         }
-        print(xs)
 
         try await db.executeRaw(
             queries: [
@@ -82,25 +81,29 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             ] + xs
         )
 
-        //        try await app.db.executeWithBindings([x])
-
         let todos = try await db.execute(
             "SELECT * FROM todos",
             as: Todo.self
         )
 
-        // .selectAll("todos")
-        // .insert(Todo())
-
-        print(todos)
-
-        let res = try PostgreSQLRowEncoder().encode(
-            Todo(id: .init(), title: "foo", url: "bar")
+        let newTodo = Todo(
+            id: .init(),
+            title: "yeah",
+            order: 420,
+            url: "spacex.com",
+            completed: true
         )
         
-        
-        
-        print(res)
+        try await app.db.execute(queries: [
+            HBDatabaseQuery(
+                unsafeSQL: """
+                INSERT INTO
+                    todos (id, title, url, "order", completed)
+                VALUES
+                    (:id:, :title:, :url:, :order:, :completed:)
+                """,
+                bindings: newTodo)
+        ])
 
         try app.shutdownApplication()
     }
