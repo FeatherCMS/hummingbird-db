@@ -9,7 +9,7 @@ struct Todo: Codable {
     let id: UUID
     let title: String
     let order: Int?
-    let url: String
+    let url: String?
     let completed: Bool?
 }
 
@@ -128,7 +128,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
                 id: .init(),
                 title: "yeah",
                 order: 420,
-                url: "spacex.com",
+                url: nil,
                 completed: true
             )
 
@@ -147,7 +147,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
                         INSERT INTO
                             `todos` (`id`, `title`, `url`, `order`)
                         VALUES
-                            (:0:, :title:, :2:, :3:)
+                            (:0:, :title:, :url:, :3:)
                         """,
                     bindings: UUID(), "hello", "valami", 12, newTodo
                 )
