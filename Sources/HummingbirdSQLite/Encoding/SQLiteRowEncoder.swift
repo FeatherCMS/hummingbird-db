@@ -1,10 +1,6 @@
 import Foundation
 import SQLiteNIO
 
-final class _UnkeyedCounter {
-    var index: Int = 0
-}
-
 struct SQLiteRowEncoder {
 
     enum KeyEncodingStrategy {
@@ -27,33 +23,40 @@ struct SQLiteRowEncoder {
         )
     }
     
-    private var unkeyedCounter = _UnkeyedCounter()
+    private var singleValueCounter = _SingleValueCounter()
     var prefix: String? = nil
     var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
 
     init() {}
 
     func encode<E: Encodable>(_ encodable: E) throws -> [(String, SQLiteData)] {
-        let encoder = _Encoder(options: options, unkeyedIndex: unkeyedCounter.index)
+        let encoder = _Encoder(
+            options: options,
+            singleValueIndex: singleValueCounter.index
+        )
         try encodable.encode(to: encoder)
-        unkeyedCounter.index += 1
-        return encoder.row
+        singleValueCounter.index += 1
+        return encoder.bindings
     }
 }
 
-private final class _Encoder: Encoder {
-    fileprivate let options: SQLiteRowEncoder._Options
+private final class _SingleValueCounter {
+    var index: Int = 0
+}
 
+private final class _Encoder: Encoder {
+
+    let options: SQLiteRowEncoder._Options
     var codingPath: [CodingKey] { [] }
     var userInfo: [CodingUserInfoKey: Any] { [:] }
 
-    var unkeyedIndex: Int
-    var row: [(String, SQLiteData)]
+    var singleValueIndex: Int
+    var bindings: [(String, SQLiteData)]
 
-    init(options: SQLiteRowEncoder._Options, unkeyedIndex: Int) {
-        self.row = []
+    init(options: SQLiteRowEncoder._Options, singleValueIndex: Int) {
+        self.bindings = []
         self.options = options
-        self.unkeyedIndex = unkeyedIndex
+        self.singleValueIndex = singleValueIndex
     }
 
     func container<Key: CodingKey>(keyedBy type: Key.Type)
@@ -63,8 +66,6 @@ private final class _Encoder: Encoder {
         KeyedEncodingContainer(_KeyedEncoder(self))
     }
 
-    
-
     func unkeyedContainer() -> UnkeyedEncodingContainer {
         fatalError("Arrays are not supported.")
     }
@@ -73,14 +74,10 @@ private final class _Encoder: Encoder {
         _SingleValueEncodingContainer(
             encoder: self,
             codingPath: codingPath,
-            index: unkeyedIndex
+            index: singleValueIndex
         )
     }
 
-    
-}
-
-extension _Encoder {
     func _convertToSnakeCase(_ stringKey: String) -> String {
         guard !stringKey.isEmpty else { return stringKey }
 
@@ -155,14 +152,14 @@ private struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
     }
 
     mutating func encodeNil(forKey key: Key) throws {
-        encoder.row.append((column(for: key), .null))
+        encoder.bindings.append((column(for: key), .null))
     }
 
     mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
         if let value = value as? SQLiteDataConvertible,
             let data = value.sqliteData
         {
-            encoder.row.append((column(for: key), data))
+            encoder.bindings.append((column(for: key), data))
         }
         else {
             throw EncodingError.invalidValue(
@@ -204,8 +201,7 @@ private struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
 
 private struct _UnkeyedEncodingContainer: UnkeyedEncodingContainer {
 
-    
-    
+    let encoder: _Encoder
     var codingPath: [CodingKey]
     var count: Int
 
@@ -288,13 +284,11 @@ private struct _UnkeyedEncodingContainer: UnkeyedEncodingContainer {
     }
 }
 
-
 private struct _SingleValueEncodingContainer: SingleValueEncodingContainer {
 
     let encoder: _Encoder
     var codingPath: [CodingKey]
     let index: Int
-    
     
     init(encoder: _Encoder, codingPath: [CodingKey], index: Int) {
         self.encoder = encoder
@@ -303,79 +297,79 @@ private struct _SingleValueEncodingContainer: SingleValueEncodingContainer {
     }
 
     mutating func encodeNil() throws {
-        encoder.row.append((String(index), .null))
+        encoder.bindings.append((String(index), .null))
     }
 
     mutating func encode(_ value: Bool) throws {
-        encoder.row.append((String(index), .integer(0)))
+        encoder.bindings.append((String(index), .integer(0)))
 
     }
 
     mutating func encode(_ value: String) throws {
-        encoder.row.append((String(index), .text(value)))
+        encoder.bindings.append((String(index), .text(value)))
 
     }
 
     mutating func encode(_ value: Double) throws {
-        encoder.row.append((String(index), .float(value)))
+        encoder.bindings.append((String(index), .float(value)))
 
     }
 
     mutating func encode(_ value: Float) throws {
-        encoder.row.append(
+        encoder.bindings.append(
             (String(index), .float(Double(value)))
         )
 
     }
 
     mutating func encode(_ value: Int) throws {
-        encoder.row.append((String(index), .integer(value)))
+        encoder.bindings.append((String(index), .integer(value)))
 
     }
 
     mutating func encode(_ value: Int8) throws {
-        encoder.row.append((String(index), .integer(Int(value))))
+        encoder.bindings.append((String(index), .integer(Int(value))))
 
     }
 
     mutating func encode(_ value: Int16) throws {
-        encoder.row.append((String(index), .integer(Int(value))))
+        encoder.bindings.append((String(index), .integer(Int(value))))
 
     }
 
     mutating func encode(_ value: Int32) throws {
-        encoder.row.append((String(index), .integer(Int(value))))
+        encoder.bindings.append((String(index), .integer(Int(value))))
 
     }
 
     mutating func encode(_ value: Int64) throws {
-        encoder.row.append((String(index), .integer(Int(value))))
+        encoder.bindings.append((String(index), .integer(Int(value))))
 
     }
 
     mutating func encode(_ value: UInt) throws {
 
-        encoder.row.append((String(index), .integer(Int(value))))
+        encoder.bindings.append((String(index), .integer(Int(value))))
 
     }
 
     mutating func encode(_ value: UInt8) throws {
-        encoder.row.append((String(index), .integer(Int(value))))
+        encoder.bindings.append((String(index), .integer(Int(value))))
 
     }
 
     mutating func encode(_ value: UInt16) throws {
-        encoder.row.append((String(index), .integer(Int(value))))
+        encoder.bindings.append((String(index), .integer(Int(value))))
 
     }
 
     mutating func encode(_ value: UInt32) throws {
-        encoder.row.append((String(index), .integer(Int(value))))
+        encoder.bindings.append((String(index), .integer(Int(value))))
 
     }
 
     mutating func encode(_ value: UInt64) throws {
-        encoder.row.append((String(index), .integer(Int(value))))
+        encoder.bindings.append((String(index), .integer(Int(value))))
     }
 
     mutating func encode<T: Encodable>(_ value: T) throws {

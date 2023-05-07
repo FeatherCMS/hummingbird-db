@@ -22,11 +22,20 @@ struct SQLiteDataDecoder {
             }
             return value as! T
         }
-        return try T.init(from: DataDecoder(data: data))
+        return try T.init(from: _Decoder(data: data))
     }
 }
 
-private final class DataDecoder: Decoder {
+private struct _DecoderBox: Decodable {
+
+    let decoder: Decoder
+
+    init(from decoder: Decoder) {
+        self.decoder = decoder
+    }
+}
+
+private final class _Decoder: Decoder {
 
     var codingPath: [CodingKey] { [] }
     var userInfo: [CodingUserInfoKey: Any] { [:] }
@@ -46,7 +55,11 @@ private final class DataDecoder: Decoder {
         try jsonDecoder().container(keyedBy: Key.self)
     }
 
-    func jsonDecoder() throws -> Decoder {
+    func singleValueContainer() throws -> SingleValueDecodingContainer {
+        _SingleValueDecodingContainer(self)
+    }
+    
+    private func jsonDecoder() throws -> Decoder {
         let data: Data
         switch self.data {
         case .blob(let buffer):
@@ -57,24 +70,20 @@ private final class DataDecoder: Decoder {
             data = .init()
         }
         return try JSONDecoder()
-            .decode(DecoderUnwrapper.self, from: data)
+            .decode(_DecoderBox.self, from: data)
             .decoder
-    }
-
-    func singleValueContainer() throws -> SingleValueDecodingContainer {
-        SingleValueDecoder(self)
     }
 }
 
-private struct SingleValueDecoder: SingleValueDecodingContainer {
+private struct _SingleValueDecodingContainer: SingleValueDecodingContainer {
 
     var codingPath: [CodingKey] {
         decoder.codingPath
     }
 
-    let decoder: DataDecoder
+    let decoder: _Decoder
 
-    init(_ decoder: DataDecoder) {
+    init(_ decoder: _Decoder) {
         self.decoder = decoder
     }
 
@@ -87,11 +96,3 @@ private struct SingleValueDecoder: SingleValueDecodingContainer {
     }
 }
 
-private struct DecoderUnwrapper: Decodable {
-
-    let decoder: Decoder
-
-    init(from decoder: Decoder) {
-        self.decoder = decoder
-    }
-}

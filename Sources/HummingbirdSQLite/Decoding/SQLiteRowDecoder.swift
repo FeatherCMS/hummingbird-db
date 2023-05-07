@@ -24,10 +24,10 @@ struct SQLiteRowDecoder {
         _ type: T.Type,
         from row: SQLiteRow
     ) throws -> T {
-        try T.init(from: RowDecoder(row: row, options: options))
+        try T.init(from: _Decoder(row: row, options: options))
     }
 
-    private var options: RowDecoderOptions {
+    private var options: _Options {
         .init(
             prefix: prefix,
             keyDecodingStrategy: keyDecodingStrategy
@@ -35,20 +35,20 @@ struct SQLiteRowDecoder {
     }
 }
 
-private enum RowDecoderError: Error {
+private struct _Options {
+    let prefix: String?
+    let keyDecodingStrategy: SQLiteRowDecoder.KeyDecodingStrategy
+}
+
+private enum _DecoderError: Error {
     case nesting
     case unkeyedContainer
     case singleValueContainer
 }
 
-private struct RowDecoderOptions {
-    let prefix: String?
-    let keyDecodingStrategy: SQLiteRowDecoder.KeyDecodingStrategy
-}
+private struct _Decoder: Decoder {
 
-private struct RowDecoder: Decoder {
-
-    let options: RowDecoderOptions
+    let options: _Options
     let row: SQLiteRow
     var codingPath: [CodingKey] = []
     var userInfo: [CodingUserInfoKey: Any] { [:] }
@@ -56,7 +56,7 @@ private struct RowDecoder: Decoder {
     init(
         row: SQLiteRow,
         codingPath: [CodingKey] = [],
-        options: RowDecoderOptions
+        options: _Options
     ) {
         self.options = options
         self.row = row
@@ -67,7 +67,7 @@ private struct RowDecoder: Decoder {
         keyedBy type: Key.Type
     ) throws -> KeyedDecodingContainer<Key> {
         .init(
-            KeyedRowDecoder(
+            _KeyedDecodingContainer(
                 referencing: self,
                 row: row,
                 codingPath: codingPath
@@ -76,17 +76,17 @@ private struct RowDecoder: Decoder {
     }
 
     func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-        throw RowDecoderError.unkeyedContainer
+        throw _DecoderError.unkeyedContainer
     }
 
     func singleValueContainer() throws -> SingleValueDecodingContainer {
-        throw RowDecoderError.singleValueContainer
+        throw _DecoderError.singleValueContainer
     }
 }
 
-private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
+private struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
 
-    let decoder: RowDecoder
+    let decoder: _Decoder
     let row: SQLiteRow
     var codingPath: [CodingKey] = []
     var allKeys: [Key] {
@@ -96,7 +96,7 @@ private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
     }
 
     init(
-        referencing decoder: RowDecoder,
+        referencing decoder: _Decoder,
         row: SQLiteRow,
         codingPath: [CodingKey] = []
     ) {
@@ -146,17 +146,17 @@ private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
         keyedBy type: NestedKey.Type,
         forKey key: Key
     ) throws -> KeyedDecodingContainer<NestedKey> {
-        throw RowDecoderError.nesting
+        throw _DecoderError.nesting
     }
 
     func nestedUnkeyedContainer(
         forKey key: Key
     ) throws -> UnkeyedDecodingContainer {
-        throw RowDecoderError.nesting
+        throw _DecoderError.nesting
     }
 
     func superDecoder() throws -> Decoder {
-        RowDecoder(
+        _Decoder(
             row: row,
             codingPath: codingPath,
             options: decoder.options
@@ -164,7 +164,7 @@ private struct KeyedRowDecoder<Key: CodingKey>: KeyedDecodingContainerProtocol {
     }
 
     func superDecoder(forKey key: Key) throws -> Decoder {
-        throw RowDecoderError.nesting
+        throw _DecoderError.nesting
     }
 
     func _convertFromSnakeCase(_ stringKey: String) -> String {
