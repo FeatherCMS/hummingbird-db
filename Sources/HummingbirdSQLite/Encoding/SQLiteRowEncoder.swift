@@ -39,87 +39,94 @@ extension UUID: SQLiteDataConvertible {
 //    }
 //}
 
+
 private struct _SingleValueEncodingContainer: SingleValueEncodingContainer {
 
     let encoder: _Encoder
     var codingPath: [CodingKey]
+    let index: Int
+    
+    
+    init(encoder: _Encoder, codingPath: [CodingKey], index: Int) {
+        self.encoder = encoder
+        self.codingPath = codingPath
+        self.index = index
+    }
 
     mutating func encodeNil() throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .null))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .null))
     }
 
     mutating func encode(_ value: Bool) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(0)))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(0)))
+
     }
 
     mutating func encode(_ value: String) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .text(value)))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .text(value)))
+
     }
 
     mutating func encode(_ value: Double) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .float(value)))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .float(value)))
+
     }
 
     mutating func encode(_ value: Float) throws {
         encoder.row.append(
-            (String(encoder.unkeyedIndex), .float(Double(value)))
+            (String(index), .float(Double(value)))
         )
-        encoder.unkeyedIndex += 1
+
     }
 
     mutating func encode(_ value: Int) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(value)))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(value)))
+
     }
 
     mutating func encode(_ value: Int8) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(Int(value))))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(Int(value))))
+
     }
 
     mutating func encode(_ value: Int16) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(Int(value))))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(Int(value))))
+
     }
 
     mutating func encode(_ value: Int32) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(Int(value))))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(Int(value))))
+
     }
 
     mutating func encode(_ value: Int64) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(Int(value))))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(Int(value))))
+
     }
 
     mutating func encode(_ value: UInt) throws {
 
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(Int(value))))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(Int(value))))
+
     }
 
     mutating func encode(_ value: UInt8) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(Int(value))))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(Int(value))))
+
     }
 
     mutating func encode(_ value: UInt16) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(Int(value))))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(Int(value))))
+
     }
 
     mutating func encode(_ value: UInt32) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(Int(value))))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(Int(value))))
+
     }
 
     mutating func encode(_ value: UInt64) throws {
-        encoder.row.append((String(encoder.unkeyedIndex), .integer(Int(value))))
-        encoder.unkeyedIndex += 1
+        encoder.row.append((String(index), .integer(Int(value))))
     }
 
     mutating func encode<T: Encodable>(_ value: T) throws {
@@ -133,7 +140,11 @@ private struct _SingleValueEncodingContainer: SingleValueEncodingContainer {
     }
 }
 
+final class _UnkeyedCounter {
+    var index: Int = 0
+}
 struct SQLiteRowEncoder {
+    private var unkeyedCounter = _UnkeyedCounter()
     var prefix: String? = nil
     var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
     var nilEncodingStrategy: NilEncodingStrategy = .default
@@ -141,8 +152,9 @@ struct SQLiteRowEncoder {
     init() {}
 
     func encode<E: Encodable>(_ encodable: E) throws -> [(String, SQLiteData)] {
-        let encoder = _Encoder(options: options)
+        let encoder = _Encoder(options: options, unkeyedIndex: unkeyedCounter.index)
         try encodable.encode(to: encoder)
+        unkeyedCounter.index += 1
         return encoder.row
     }
 
@@ -183,12 +195,13 @@ private final class _Encoder: Encoder {
     var codingPath: [CodingKey] { [] }
     var userInfo: [CodingUserInfoKey: Any] { [:] }
 
-    var unkeyedIndex = 0
+    var unkeyedIndex: Int
     var row: [(String, SQLiteData)]
 
-    init(options: SQLiteRowEncoder._Options) {
+    init(options: SQLiteRowEncoder._Options, unkeyedIndex: Int) {
         self.row = []
         self.options = options
+        self.unkeyedIndex = unkeyedIndex
     }
 
     func container<Key: CodingKey>(keyedBy type: Key.Type)
@@ -203,11 +216,11 @@ private final class _Encoder: Encoder {
     }
 
     struct _NilColumnKeyedEncoder<Key: CodingKey>:
-KeyedEncodingContainerProtocol
+        KeyedEncodingContainerProtocol
     {
         var codingPath: [CodingKey] { [] }
         let encoder: _Encoder
-        
+
         init(_ encoder: _Encoder) {
             self.encoder = encoder
         }
@@ -303,9 +316,10 @@ KeyedEncodingContainerProtocol
         mutating func encodeIfPresent(_ value: Float?, forKey key: Key) throws {
             try _encodeIfPresent(value, forKey: key)
         }
+
         mutating func encodeIfPresent(_ value: String?, forKey key: Key) throws
         { try _encodeIfPresent(value, forKey: key) }
-        
+
         mutating func encodeIfPresent(_ value: Bool?, forKey key: Key) throws {
             try _encodeIfPresent(value, forKey: key)
         }
@@ -337,15 +351,19 @@ KeyedEncodingContainerProtocol
     }
 
     func singleValueContainer() -> SingleValueEncodingContainer {
-        _SingleValueEncodingContainer(encoder: self, codingPath: codingPath)
+        _SingleValueEncodingContainer(
+            encoder: self,
+            codingPath: codingPath,
+            index: unkeyedIndex
+        )
     }
 
     struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
-        
+
         var codingPath: [CodingKey] { [] }
-        
+
         let encoder: _Encoder
-        
+
         init(_ encoder: _Encoder) {
             self.encoder = encoder
         }
@@ -419,7 +437,7 @@ KeyedEncodingContainerProtocol
 }
 
 extension _Encoder {
-    
+
     fileprivate static func _convertToSnakeCase(_ stringKey: String) -> String {
         guard !stringKey.isEmpty else { return stringKey }
 

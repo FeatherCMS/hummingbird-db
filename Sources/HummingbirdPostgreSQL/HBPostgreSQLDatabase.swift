@@ -30,7 +30,7 @@ struct HBPostgreSQLDatabase: HBDatabase {
     }
 
     private func prepare(
-        query: any HBDatabaseQueryInterface
+        query: HBDatabaseQuery
     ) throws -> (String, PostgresBindings) {
         var patterns: [String: PostgresData] = [:]
 
@@ -78,7 +78,7 @@ struct HBPostgreSQLDatabase: HBDatabase {
         return (bindingQuery, currentBindings)
     }
 
-    func execute(_ queries: [any HBDatabaseQueryInterface]) async throws {
+    func execute(_ queries: [HBDatabaseQuery]) async throws {
         try await run { connection in
             for query in queries {
                 let q = try prepare(query: query)

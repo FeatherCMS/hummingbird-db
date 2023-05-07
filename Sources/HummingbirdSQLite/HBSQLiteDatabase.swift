@@ -3,9 +3,6 @@ import Logging
 import NIOCore
 import SQLiteNIO
 
-// NOTE: total hack for now
-private struct NoBinding: Encodable {}
-
 struct HBSQLiteDatabase: HBDatabase {
 
     let service: HBSQLiteDatabaseService
@@ -22,7 +19,7 @@ struct HBSQLiteDatabase: HBDatabase {
     }
 
     private func prepare(
-        query: any HBDatabaseQueryInterface
+        query: HBDatabaseQuery
     ) throws -> (String, [SQLiteData]) {
         var patterns: [String: SQLiteData] = [:]
 
@@ -69,18 +66,20 @@ struct HBSQLiteDatabase: HBDatabase {
             throw HBDatabaseError.binding
         }
 
-        //        print(patterns, bindingQuery, currentBindings)
+//        print("----------------------------")
+//        print(patterns, bindingQuery, currentBindings)
+//        print("----------------------------")
 
         return (bindingQuery, currentBindings)
     }
 
     func executeRaw(_ queries: [String]) async throws {
         try await execute(
-            queries.map { HBDatabaseQuery<NoBinding>(unsafeSQL: $0) }
+            queries.map { HBDatabaseQuery(unsafeSQL: $0) }
         )
     }
 
-    func execute(_ queries: [any HBDatabaseQueryInterface]) async throws {
+    func execute(_ queries: [HBDatabaseQuery]) async throws {
         try await run { connection in
             for query in queries {
                 let q = try prepare(query: query)

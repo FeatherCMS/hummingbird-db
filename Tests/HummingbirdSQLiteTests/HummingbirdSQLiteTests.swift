@@ -89,7 +89,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
             HBDatabaseQuery(
                 unsafeSQL:
                     #"CREATE TABLE "scores" ("score" INTEGER NOT NULL);"#,
-                bindings: [:]
+                bindings: ["": 1]
             ),
             HBDatabaseQuery(
                 unsafeSQL: #"INSERT INTO scores (score) VALUES (:1:);"#,
@@ -111,7 +111,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
                 CREATE TABLE
                     todos
                 (
-                    "id" uuid PRIMARY KEY,
+                    "id" text NOT NULL PRIMARY KEY,
                     "title" text NOT NULL,
                     "order" integer,
                     "url" text,
@@ -133,25 +133,33 @@ final class HummingbirdSQLiteTests: XCTestCase {
             )
 
             try await db.execute([
+                //                HBDatabaseQuery(
+                //                    unsafeSQL: """
+                //                        INSERT INTO
+                //                            `todos` (`id`, `title`, `url`, `order`)
+                //                        VALUES
+                //                            (:id:, :title:, :url:, :order:)
+                //                        """,
+                //                    bindings: newTodo
+                //                ),
                 HBDatabaseQuery(
                     unsafeSQL: """
                         INSERT INTO
                             `todos` (`id`, `title`, `url`, `order`)
                         VALUES
-                            (:id:, :title:, :url:, :order:)
+                            (:0:, :title:, :2:, :3:)
                         """,
-                    bindings: newTodo
-                ),
-                HBDatabaseQuery(
-                    unsafeSQL: """
-                        INSERT INTO
-                            `foo` (`bar`)
-                        VALUES
-                            (:0:), (:1:)
-                        """,
-                    bindings: 23,
-                    42
-                ),
+                    bindings: UUID(), "hello", "valami", 12, newTodo
+                )
+                //                HBDatabaseQuery(
+                //                    unsafeSQL: """
+                //                        INSERT INTO
+                //                            `foo` (`bar`)
+                //                        VALUES
+                //                            (:0:), (:1:)
+                //                        """,
+                //                    bindings: 23, 42
+                //                ),
             ])
         }
     }
