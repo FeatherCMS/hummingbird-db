@@ -18,8 +18,15 @@ public protocol HBDatabase {
 
     var type: HBDatabaseType { get }
 
-    func executeRaw(queries: [String]) async throws
-    func execute(queries: [any HBDatabaseQueryInterface]) async throws
+    func executeRaw(_: [String]) async throws
+    func execute(_: [any HBDatabaseQueryInterface]) async throws
+    func execute(_: any HBDatabaseQueryInterface...) async throws
 
     func execute<T: Decodable>(_ query: String, as: T.Type) async throws -> [T]
+}
+
+public extension HBDatabase {
+    func execute(_ queries: any HBDatabaseQueryInterface...) async throws {
+        try await execute(queries)
+    }
 }

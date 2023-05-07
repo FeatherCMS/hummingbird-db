@@ -38,32 +38,30 @@ final class HummingbirdSQLiteTests: XCTestCase {
             xs.append(x)
         }
 
-        try await db.executeRaw(
-            queries: [
-                "DROP TABLE IF EXISTS todos",
+        try await db.executeRaw([
+            "DROP TABLE IF EXISTS todos",
 
-                """
-                CREATE TABLE
-                    todos
-                (
-                    "id" uuid PRIMARY KEY,
-                    "title" text NOT NULL,
-                    "order" integer,
-                    "url" text
-                );
-                """,
+            """
+            CREATE TABLE
+                todos
+            (
+                "id" uuid PRIMARY KEY,
+                "title" text NOT NULL,
+                "order" integer,
+                "url" text
+            );
+            """,
 
-                """
-                ALTER TABLE
-                    todos
-                ADD COLUMN
-                    "completed" BOOLEAN
-                DEFAULT FALSE;
-                """,
-            ]
-        )
+            """
+            ALTER TABLE
+                todos
+            ADD COLUMN
+                "completed" BOOLEAN
+            DEFAULT FALSE;
+            """,
+        ])
         
-        try await app.db.execute(queries: [
+        try await app.db.execute([
             HBDatabaseQuery(
                 unsafeSQL: #"CREATE TABLE "scores" ("score" INTEGER NOT NULL);"#,
                 bindings: [:]
@@ -83,7 +81,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
         )
         
         /// must re-create table, in-memory db messes up this...
-        try await app.db.execute(queries: [
+        try await app.db.execute([
             HBDatabaseQuery(
                 unsafeSQL: """
                 CREATE TABLE
@@ -108,9 +106,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
             ),
         ])
         
-        try await db.executeRaw(
-            queries: xs
-        )
+        try await db.executeRaw(xs)
 
         try app.shutdownApplication()
     }

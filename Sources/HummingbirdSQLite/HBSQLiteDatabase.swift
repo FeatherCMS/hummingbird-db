@@ -73,13 +73,13 @@ struct HBSQLiteDatabase: HBDatabase {
         return (bindingQuery, currentBindings)
     }
 
-    func executeRaw(queries: [String]) async throws {
+    func executeRaw(_ queries: [String]) async throws {
         try await execute(
-            queries: queries.map { HBDatabaseQuery<NoBinding>(unsafeSQL: $0) }
+            queries.map { HBDatabaseQuery<NoBinding>(unsafeSQL: $0) }
         )
     }
 
-    func execute(queries: [any HBDatabaseQueryInterface]) async throws {
+    func execute(_ queries: [any HBDatabaseQueryInterface]) async throws {
         try await run { connection in
             for query in queries {
                 let q = try prepare(query: query)

@@ -44,7 +44,7 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
         }
 
         var xs: [String] = []
-        for _ in 0...10 {
+        for _ in 1...10 {
             let id = UUID()
             let title = "random title"
             let url = "lorem ipusm"
@@ -56,35 +56,37 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             xs.append(x)
         }
 
-        try await db.executeRaw(
-            queries: [
-                "DROP TABLE todos",
+        try await db.executeRaw([
+            "DROP TABLE todos",
 
-                """
-                CREATE TABLE
-                    todos
-                (
-                    "id" uuid PRIMARY KEY,
-                    "title" text NOT NULL,
-                    "order" integer,
-                    "url" text
-                );
-                """,
+            """
+            CREATE TABLE
+                todos
+            (
+                "id" uuid PRIMARY KEY,
+                "title" text NOT NULL,
+                "order" integer,
+                "url" text
+            );
+            """,
 
-                """
-                ALTER TABLE
-                    todos
-                ADD COLUMN
-                    "completed" BOOLEAN
-                DEFAULT FALSE;
-                """,
-            ] + xs
-        )
+            """
+            ALTER TABLE
+                todos
+            ADD COLUMN
+                "completed" BOOLEAN
+            DEFAULT FALSE;
+            """,
+        ])
+        
+        try await db.executeRaw(xs)
 
         let todos = try await db.execute(
             "SELECT * FROM todos",
             as: Todo.self
         )
+        
+        XCTAssertEqual(todos.count, 10)
 
         let newTodo = Todo(
             id: .init(),
@@ -94,7 +96,7 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             completed: true
         )
         
-        try await app.db.execute(queries: [
+        try await app.db.execute([
             HBDatabaseQuery(
                 unsafeSQL: """
                 INSERT INTO
