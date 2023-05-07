@@ -49,20 +49,19 @@ final class HummingbirdSQLiteTests: XCTestCase {
         let path = "/Users/tib/\(UUID().uuidString).sqlite"
         let app = createTestApp(path: path)
 
-        var xs: [String] = []
+        var xs: [HBDatabaseQuery] = []
         for _ in 0...10 {
             let id = UUID()
             let title = "random title"
             let url = "lorem ipusm"
             let order = 1
 
-            let x =
-                "INSERT INTO todos (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
-
-            xs.append(x)
+            xs.append(
+                .init(unsafeSQL: "INSERT INTO todos (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));")
+            )
         }
 
-        try await app.db.executeRaw([
+        try await app.db.execute([
             "DROP TABLE IF EXISTS todos",
 
             """
@@ -97,7 +96,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
             ),
         ])
 
-        try await app.db.executeRaw(xs)
+        try await app.db.execute(xs)
 
         try app.shutdownApplication()
         try FileManager.default.removeItem(atPath: path)
@@ -106,7 +105,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
     func testBindings() async throws {
 
         try await runTest { db in
-            try await db.executeRaw([
+            try await db.execute([
                 """
                 CREATE TABLE
                     todos
@@ -168,7 +167,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
         let path = "/Users/tib/\(UUID().uuidString).sqlite"
         let app = createTestApp(path: path)
 
-        try await app.db.executeRaw([
+        try await app.db.execute([
             """
             CREATE TABLE products(
                 product text NOT null

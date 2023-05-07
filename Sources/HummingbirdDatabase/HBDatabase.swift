@@ -8,13 +8,18 @@ public struct HBDatabaseQuery {
     }
 }
 
+extension HBDatabaseQuery: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self = .init(unsafeSQL: value)
+    }
+}
+
 public protocol HBDatabase {
 
     var type: HBDatabaseType { get }
 
-    func executeRaw(_: [String]) async throws
-    func execute(_: [HBDatabaseQuery]) async throws
     func execute(_: HBDatabaseQuery...) async throws
+    func execute(_: [HBDatabaseQuery]) async throws
 
     func execute<T: Decodable>(_ query: String, as: T.Type) async throws -> [T]
 }
