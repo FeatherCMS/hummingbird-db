@@ -157,6 +157,16 @@ final class HummingbirdSQLiteTests: XCTestCase {
                 completed: true
             )
 
+            
+            
+            try await db.execute(
+                .insert(
+                    into: "todos",
+                    keys: ["id", "title", "url", "order"],
+                    bindings: UUID(), "foo", "bar", 42
+                )
+            )
+
             try await db.execute([
                 .init(
                     unsafeSQL: """
@@ -178,6 +188,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
                     bindings:
                         UUID(), "hello", "valami", 12, newTodo
                 ),
+                
                 .init(
                     unsafeSQL: """
                         INSERT INTO
