@@ -133,15 +133,15 @@ final class HummingbirdSQLiteTests: XCTestCase {
             )
 
             try await db.execute([
-                //                HBDatabaseQuery(
-                //                    unsafeSQL: """
-                //                        INSERT INTO
-                //                            `todos` (`id`, `title`, `url`, `order`)
-                //                        VALUES
-                //                            (:id:, :title:, :url:, :order:)
-                //                        """,
-                //                    bindings: newTodo
-                //                ),
+                HBDatabaseQuery(
+                    unsafeSQL: """
+                        INSERT INTO
+                            `todos` (`id`, `title`, `url`, `order`)
+                        VALUES
+                            (:id:, :title:, :url:, :order:)
+                        """,
+                    bindings: newTodo
+                ),
                 HBDatabaseQuery(
                     unsafeSQL: """
                         INSERT INTO
@@ -150,16 +150,16 @@ final class HummingbirdSQLiteTests: XCTestCase {
                             (:0:, :title:, :url:, :3:)
                         """,
                     bindings: UUID(), "hello", "valami", 12, newTodo
-                )
-                //                HBDatabaseQuery(
-                //                    unsafeSQL: """
-                //                        INSERT INTO
-                //                            `foo` (`bar`)
-                //                        VALUES
-                //                            (:0:), (:1:)
-                //                        """,
-                //                    bindings: 23, 42
-                //                ),
+                ),
+                HBDatabaseQuery(
+                    unsafeSQL: """
+                        INSERT INTO
+                            `foo` (`bar`)
+                        VALUES
+                            (:0:), (:1:)
+                        """,
+                    bindings: 23, 42
+                ),
             ])
         }
     }

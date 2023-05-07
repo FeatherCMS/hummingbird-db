@@ -62,7 +62,6 @@ private final class _Encoder: Encoder {
     func container<Key: CodingKey>(keyedBy type: Key.Type)
         -> KeyedEncodingContainer<Key>
     {
-        
         KeyedEncodingContainer(_KeyedEncoder(self))
     }
 
@@ -173,13 +172,13 @@ private struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
         keyedBy keyType: NestedKey.Type,
         forKey key: Key
     ) -> KeyedEncodingContainer<NestedKey> {
-        fatalError()
+        fatalError("Nested objects are not supported.")
     }
 
     mutating func nestedUnkeyedContainer(forKey key: Key)
         -> UnkeyedEncodingContainer
     {
-        fatalError()
+        fatalError("Nested arrays are not supported.")
     }
 
     mutating func superEncoder() -> Encoder {
@@ -195,91 +194,6 @@ private struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
     }
 
     func singleValueContainer() -> SingleValueEncodingContainer {
-        fatalError()
-    }
-}
-
-private struct _UnkeyedEncodingContainer: UnkeyedEncodingContainer {
-
-    let encoder: _Encoder
-    var codingPath: [CodingKey]
-    var count: Int
-
-    mutating func encodeNil() throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: String) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Double) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Float) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Int) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Int8) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Int16) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Int32) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Int64) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: UInt) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: UInt8) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: UInt16) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: UInt32) throws {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: UInt64) throws {
-        fatalError()
-    }
-    
-    mutating func encode<T>(_ value: T) throws where T : Encodable {
-        fatalError()
-    }
-    
-    mutating func encode(_ value: Bool) throws {
-        fatalError()
-    }
-
-    mutating func nestedContainer<NestedKey: CodingKey>(
-        keyedBy keyType: NestedKey.Type
-    ) -> KeyedEncodingContainer<NestedKey> {
-        fatalError()
-    }
-
-    mutating func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
-        fatalError("Nested arrays are not supported")
-    }
-
-    mutating func superEncoder() -> Encoder {
         fatalError()
     }
 }
@@ -302,70 +216,56 @@ private struct _SingleValueEncodingContainer: SingleValueEncodingContainer {
 
     mutating func encode(_ value: Bool) throws {
         encoder.bindings.append((String(index), .integer(0)))
-
     }
 
     mutating func encode(_ value: String) throws {
         encoder.bindings.append((String(index), .text(value)))
-
     }
 
     mutating func encode(_ value: Double) throws {
         encoder.bindings.append((String(index), .float(value)))
-
     }
 
     mutating func encode(_ value: Float) throws {
         encoder.bindings.append(
             (String(index), .float(Double(value)))
         )
-
     }
 
     mutating func encode(_ value: Int) throws {
         encoder.bindings.append((String(index), .integer(value)))
-
     }
 
     mutating func encode(_ value: Int8) throws {
         encoder.bindings.append((String(index), .integer(Int(value))))
-
     }
 
     mutating func encode(_ value: Int16) throws {
         encoder.bindings.append((String(index), .integer(Int(value))))
-
     }
 
     mutating func encode(_ value: Int32) throws {
         encoder.bindings.append((String(index), .integer(Int(value))))
-
     }
 
     mutating func encode(_ value: Int64) throws {
         encoder.bindings.append((String(index), .integer(Int(value))))
-
     }
 
     mutating func encode(_ value: UInt) throws {
-
         encoder.bindings.append((String(index), .integer(Int(value))))
-
     }
 
     mutating func encode(_ value: UInt8) throws {
         encoder.bindings.append((String(index), .integer(Int(value))))
-
     }
 
     mutating func encode(_ value: UInt16) throws {
         encoder.bindings.append((String(index), .integer(Int(value))))
-
     }
 
     mutating func encode(_ value: UInt32) throws {
         encoder.bindings.append((String(index), .integer(Int(value))))
-
     }
 
     mutating func encode(_ value: UInt64) throws {
@@ -377,7 +277,7 @@ private struct _SingleValueEncodingContainer: SingleValueEncodingContainer {
             value,
             .init(
                 codingPath: codingPath,
-                debugDescription: "Can't encode value."
+                debugDescription: "Can't encode complex encodable value."
             )
         )
     }
