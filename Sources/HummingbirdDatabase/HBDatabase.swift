@@ -5,7 +5,10 @@ public protocol HBDatabase {
     func execute(_: HBDatabaseQuery...) async throws
     func execute(_: [HBDatabaseQuery]) async throws
 
-    func execute<T: Decodable>(_ query: String, as: T.Type) async throws -> [T]
+    func execute<T: Decodable>(
+        _ query: HBDatabaseQuery,
+        rowType: T.Type
+    ) async throws -> [T]
 }
 
 extension HBDatabase {

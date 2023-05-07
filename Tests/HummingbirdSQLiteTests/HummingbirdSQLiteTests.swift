@@ -260,12 +260,15 @@ final class HummingbirdSQLiteTests: XCTestCase {
         }
 
         let res = try await app.db.execute(
-            """
-            SELECT *
-            FROM products
-            CROSS JOIN calendars;
-            """,
-            as: Joined.self
+            .init(
+                unsafeSQL:
+                """
+                SELECT *
+                FROM products
+                CROSS JOIN calendars;
+                """
+            ),
+            rowType: Joined.self
         )
 
         XCTAssertEqual(res.count, 36)

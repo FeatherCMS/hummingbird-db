@@ -73,12 +73,6 @@ struct HBSQLiteDatabase: HBDatabase {
         return (bindingQuery, currentBindings)
     }
 
-    func executeRaw(_ queries: [String]) async throws {
-        try await execute(
-            queries.map { HBDatabaseQuery(unsafeSQL: $0) }
-        )
-    }
-
     func execute(_ queries: [HBDatabaseQuery]) async throws {
         try await run { connection in
             for query in queries {
@@ -88,11 +82,14 @@ struct HBSQLiteDatabase: HBDatabase {
         }
     }
 
-    func execute<T: Decodable>(_ query: String, as: T.Type) async throws -> [T]
-    {
+    func execute<T: Decodable>(
+        _ query: HBDatabaseQuery,
+        rowType: T.Type
+    ) async throws -> [T] {
         try await run { connection in
             let decoder = SQLiteRowDecoder()
-            return try await connection.query(query).get().map {
+            let q = try prepare(query: query)
+            return try await connection.query(q.0, q.1).get().map {
                 try decoder.decode(T.self, from: $0)
             }
         }

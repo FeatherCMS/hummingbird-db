@@ -82,8 +82,10 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
         try await db.executeRaw(xs)
 
         let todos = try await db.execute(
-            "SELECT * FROM todos",
-            as: Todo.self
+            .init(
+                unsafeSQL: "SELECT * FROM todos"
+            ),
+            rowType: Todo.self
         )
 
         XCTAssertEqual(todos.count, 10)

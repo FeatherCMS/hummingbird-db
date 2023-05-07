@@ -90,11 +90,14 @@ struct HBPostgreSQLDatabase: HBDatabase {
         }
     }
 
-    func execute<T: Decodable>(_ query: String, as: T.Type) async throws -> [T]
-    {
+    func execute<T: Decodable>(
+        _ query: HBDatabaseQuery,
+        rowType: T.Type
+    ) async throws -> [T] {
         try await run { connection in
+            let q = try prepare(query: query)
             let stream = try await connection.query(
-                .init(stringLiteral: query),
+                .init(unsafeSQL: q.0, binds: q.1),
                 logger: logger
             )
             let decoder = PostgreSQLRowDecoder()
