@@ -23,7 +23,7 @@ struct SQLiteRowEncoder {
         )
     }
     
-    private var singleValueCounter = _SingleValueCounter()
+    private var indexCounter = _IndexCounter()
     var prefix: String? = nil
     var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
 
@@ -32,31 +32,32 @@ struct SQLiteRowEncoder {
     func encode<E: Encodable>(_ encodable: E) throws -> [(String, SQLiteData)] {
         let encoder = _Encoder(
             options: options,
-            singleValueIndex: singleValueCounter.index
+            index: indexCounter.index
         )
         try encodable.encode(to: encoder)
-        singleValueCounter.index += 1
+        indexCounter.index += 1
         return encoder.bindings
     }
 }
 
-private final class _SingleValueCounter {
+private final class _IndexCounter {
     var index: Int = 0
 }
 
 private final class _Encoder: Encoder, SingleValueEncodingContainer {
 
-    let options: SQLiteRowEncoder._Options
+    var bindings: [(String, SQLiteData)]
+
     var codingPath: [CodingKey] { [] }
     var userInfo: [CodingUserInfoKey: Any] { [:] }
 
-    var singleValueIndex: Int
-    var bindings: [(String, SQLiteData)]
+    let options: SQLiteRowEncoder._Options
+    let index: Int
 
-    init(options: SQLiteRowEncoder._Options, singleValueIndex: Int) {
+    init(options: SQLiteRowEncoder._Options, index: Int) {
         self.bindings = []
         self.options = options
-        self.singleValueIndex = singleValueIndex
+        self.index = index
     }
 
     func container<Key: CodingKey>(keyedBy type: Key.Type)
@@ -74,12 +75,12 @@ private final class _Encoder: Encoder, SingleValueEncodingContainer {
     }
     
     func encodeNil() throws {
-        bindings.append((String(singleValueIndex), .null))
+        bindings.append((String(index), .null))
     }
     
     func encode<T: Encodable>(_ value: T) throws {
         let data = try SQLiteDataEncoder().encode(value)
-        bindings.append((String(singleValueIndex), data))
+        bindings.append((String(index), data))
     }
 
     func _convertToSnakeCase(_ stringKey: String) -> String {
@@ -118,10 +119,8 @@ private final class _Encoder: Encoder, SingleValueEncodingContainer {
                 status = .lowercase
                 snakeCasedString.append(stringKey[i])
             }
-
             i = nextIndex
         }
-
         return snakeCasedString
     }
 }
@@ -136,7 +135,7 @@ private struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
         self.encoder = encoder
     }
 
-    func column(for key: Key) -> String {
+    func resolvedKey(for key: Key) -> String {
         var encodedKey = key.stringValue
         switch encoder.options.keyEncodingStrategy {
         case .useDefaultKeys:
@@ -150,27 +149,24 @@ private struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
         if let prefix = encoder.options.prefix {
             return prefix + encodedKey
         }
-        else {
-            return encodedKey
-        }
+        return encodedKey
     }
 
     mutating func encodeNil(forKey key: Key) throws {
-        encoder.bindings.append((column(for: key), .null))
+        encoder.bindings.append((resolvedKey(for: key), .null))
     }
 
     mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
-        if let value = value as? SQLiteDataConvertible,
+        guard
+            let value = value as? SQLiteDataConvertible,
             let data = value.sqliteData
-        {
-            encoder.bindings.append((column(for: key), data))
-        }
         else {
             throw EncodingError.invalidValue(
                 value,
                 .init(codingPath: [key], debugDescription: "Invalid value")
             )
         }
+        encoder.bindings.append((resolvedKey(for: key), data))
     }
 
     mutating func nestedContainer<NestedKey: CodingKey>(
