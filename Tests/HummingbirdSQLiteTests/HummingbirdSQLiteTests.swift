@@ -1,29 +1,53 @@
 import Hummingbird
 import HummingbirdDatabase
+import HummingbirdSQLite
 import Logging
 import NIO
 import XCTest
 
-@testable import HummingbirdSQLite
+struct Todo: Codable {
+    let id: UUID
+    let title: String
+    let order: Int?
+    let url: String
+    let completed: Bool?
+}
 
 final class HummingbirdSQLiteTests: XCTestCase {
 
-    func testExample() async throws {
+    private func createTestApp(path: String) -> HBApplication {
         let app = HBApplication()
-        
+
         var logger = Logger(label: "sqlite-logger")
         logger.logLevel = .info
 
         app.services.setUpSQLiteDatabase(
-            storage: .memory,
+            path: path,
             threadPool: app.threadPool,
             eventLoopGroup: app.eventLoopGroup,
             logger: logger
         )
+        return app
+    }
 
-        guard let db = app.db as? HBSQLiteDatabase else {
-            return XCTFail()
+    private func runTest(_ block: (HBDatabase) async throws -> Void)
+        async throws
+    {
+        let path = "/Users/tib/\(UUID().uuidString).sqlite"
+        let app = createTestApp(path: path)
+        do {
+            try await block(app.db)
         }
+        catch {
+            XCTFail(error.localizedDescription)
+        }
+        try app.shutdownApplication()
+        try FileManager.default.removeItem(atPath: path)
+    }
+
+    func testExample() async throws {
+        let path = "/Users/tib/\(UUID().uuidString).sqlite"
+        let app = createTestApp(path: path)
 
         var xs: [String] = []
         for _ in 0...10 {
@@ -38,7 +62,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
             xs.append(x)
         }
 
-        try await db.executeRaw([
+        try await app.db.executeRaw([
             "DROP TABLE IF EXISTS todos",
 
             """
@@ -60,10 +84,11 @@ final class HummingbirdSQLiteTests: XCTestCase {
             DEFAULT FALSE;
             """,
         ])
-        
+
         try await app.db.execute([
             HBDatabaseQuery(
-                unsafeSQL: #"CREATE TABLE "scores" ("score" INTEGER NOT NULL);"#,
+                unsafeSQL:
+                    #"CREATE TABLE "scores" ("score" INTEGER NOT NULL);"#,
                 bindings: [:]
             ),
             HBDatabaseQuery(
@@ -72,50 +97,125 @@ final class HummingbirdSQLiteTests: XCTestCase {
             ),
         ])
 
-        let newTodo = Todo(
-            id: .init(),
-            title: "yeah",
-            order: 420,
-            url: "spacex.com",
-            completed: true
-        )
-        
-        /// must re-create table, in-memory db messes up this...
-        try await app.db.execute([
-            HBDatabaseQuery(
-                unsafeSQL: """
+        try await app.db.executeRaw(xs)
+
+        try app.shutdownApplication()
+        try FileManager.default.removeItem(atPath: path)
+    }
+
+    func testBindings() async throws {
+
+        try await runTest { db in
+            try await db.executeRaw([
+                """
                 CREATE TABLE
                     todos
                 (
                     "id" uuid PRIMARY KEY,
                     "title" text NOT NULL,
                     "order" integer,
-                    "url" text
-                );
+                    "url" text,
+                    "completed" BOOLEAN DEFAULT FALSE
+                )
                 """,
-                bindings: newTodo
-            ),
-            HBDatabaseQuery(
-                unsafeSQL: """
-                INSERT INTO
-                    `todos` (`id`, `title`, `url`, `order`)
-                VALUES
-                    (:id:, :title:, :url:, :order:)
+
+                """
+                CREATE TABLE foo ("bar" integer)
                 """,
-                bindings: newTodo
-            ),
+            ])
+
+            let newTodo = Todo(
+                id: .init(),
+                title: "yeah",
+                order: 420,
+                url: "spacex.com",
+                completed: true
+            )
+
+            try await db.execute([
+                HBDatabaseQuery(
+                    unsafeSQL: """
+                        INSERT INTO
+                            `todos` (`id`, `title`, `url`, `order`)
+                        VALUES
+                            (:id:, :title:, :url:, :order:)
+                        """,
+                    bindings: newTodo
+                ),
+                HBDatabaseQuery(
+                    unsafeSQL: """
+                        INSERT INTO
+                            `foo` (`bar`)
+                        VALUES
+                            (:0:), (:1:)
+                        """,
+                    bindings: 23,
+                    42
+                ),
+            ])
+        }
+    }
+
+    func testJoin() async throws {
+        let path = "/Users/tib/\(UUID().uuidString).sqlite"
+        let app = createTestApp(path: path)
+
+        try await app.db.executeRaw([
+            """
+            CREATE TABLE products(
+                product text NOT null
+            );
+            """,
+
+            """
+            INSERT INTO products(product)
+            VALUES('P1'),('P2'),('P3');
+            """,
+
+            """
+            CREATE TABLE calendars(
+                y int NOT NULL,
+                m int NOT NULL
+            );
+            """,
+
+            """
+            INSERT INTO calendars(y,m)
+            VALUES
+                (2019,1),
+                (2019,2),
+                (2019,3),
+                (2019,4),
+                (2019,5),
+                (2019,6),
+                (2019,7),
+                (2019,8),
+                (2019,9),
+                (2019,10),
+                (2019,11),
+                (2019,12);
+            """,
         ])
-        
-        try await db.executeRaw(xs)
+
+        struct Joined: Decodable {
+            let product: String
+            let y: Int
+            let m: Int
+        }
+
+        let res = try await app.db.execute(
+            """
+            SELECT *
+            FROM products
+            CROSS JOIN calendars;
+            """,
+            as: Joined.self
+        )
+
+        XCTAssertEqual(res.count, 36)
 
         try app.shutdownApplication()
+        try FileManager.default.removeItem(atPath: path)
     }
-}
 
-struct Todo: Codable {
-    var id: UUID
-    var title: String
-    var order: Int?
-    var url: String
-    var completed: Bool?
 }

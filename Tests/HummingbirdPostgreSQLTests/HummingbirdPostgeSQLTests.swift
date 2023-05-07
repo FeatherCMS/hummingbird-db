@@ -36,12 +36,12 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             return XCTFail()
         }
 
-        switch app.db.type {
-        case .postgresql:
-            print("postgresql")
-        case .sqlite:
-            print("sqlite")
-        }
+        //        switch app.db.type {
+        //        case .postgresql:
+        //            print("postgresql")
+        //        case .sqlite:
+        //            print("sqlite")
+        //        }
 
         var xs: [String] = []
         for _ in 1...10 {
@@ -78,14 +78,14 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             DEFAULT FALSE;
             """,
         ])
-        
+
         try await db.executeRaw(xs)
 
         let todos = try await db.execute(
             "SELECT * FROM todos",
             as: Todo.self
         )
-        
+
         XCTAssertEqual(todos.count, 10)
 
         let newTodo = Todo(
@@ -95,16 +95,17 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             url: "spacex.com",
             completed: true
         )
-        
+
         try await app.db.execute([
             HBDatabaseQuery(
                 unsafeSQL: """
-                INSERT INTO
-                    todos (id, title, url, "order", completed)
-                VALUES
-                    (:id:, :title:, :url:, :order:, :completed:)
-                """,
-                bindings: newTodo)
+                    INSERT INTO
+                        todos (id, title, url, "order", completed)
+                    VALUES
+                        (:id:, :title:, :url:, :order:, :completed:)
+                    """,
+                bindings: newTodo
+            )
         ])
 
         try app.shutdownApplication()

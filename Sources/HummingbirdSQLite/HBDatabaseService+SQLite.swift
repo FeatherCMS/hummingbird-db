@@ -7,14 +7,14 @@ import SQLiteNIO
 extension HBApplication.Services {
 
     public func setUpSQLiteDatabase(
-        storage: SQLiteConnection.Storage,
+        path: String,
         maxConnections: Int = 10,
         threadPool: NIOThreadPool,
         eventLoopGroup: EventLoopGroup,
         logger: Logger
     ) {
         db = HBSQLiteDatabaseService(
-            storage: storage,
+            path: path,
             maxConnections: maxConnections,
             threadPool: threadPool,
             eventLoopGroup: eventLoopGroup,

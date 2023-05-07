@@ -46,10 +46,9 @@ public struct SQLiteDataEncoder {
             self.result = .data(.null)
         }
 
-        func container<Key>(
+        func container<Key: CodingKey>(
             keyedBy type: Key.Type
-        ) -> KeyedEncodingContainer<Key>
-        where Key: CodingKey {
+        ) -> KeyedEncodingContainer<Key> {
             self.result = .keyed
             return .init(_KeyedEncoder())
         }
@@ -64,19 +63,18 @@ public struct SQLiteDataEncoder {
         }
     }
 
-    private struct _KeyedEncoder<Key>: KeyedEncodingContainerProtocol
-    where Key: CodingKey {
+    private struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol
+    {
         var codingPath: [CodingKey] { [] }
 
         mutating func encodeNil(forKey key: Key) throws {}
-        mutating func encode<T>(_ value: T, forKey key: Key) throws
-        where T: Encodable {}
+        mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
+        }
 
-        mutating func nestedContainer<NestedKey>(
+        mutating func nestedContainer<NestedKey: CodingKey>(
             keyedBy keyType: NestedKey.Type,
             forKey key: Key
-        ) -> KeyedEncodingContainer<NestedKey>
-        where NestedKey: CodingKey {
+        ) -> KeyedEncodingContainer<NestedKey> {
             .init(_KeyedEncoder<NestedKey>())
         }
 
@@ -100,13 +98,11 @@ public struct SQLiteDataEncoder {
         var count: Int = 0
 
         mutating func encodeNil() throws {}
-        mutating func encode<T>(_ value: T) throws
-        where T: Encodable {}
+        mutating func encode<T: Encodable>(_ value: T) throws {}
 
-        mutating func nestedContainer<NestedKey>(
+        mutating func nestedContainer<NestedKey: CodingKey>(
             keyedBy keyType: NestedKey.Type
-        ) -> KeyedEncodingContainer<NestedKey>
-        where NestedKey: CodingKey {
+        ) -> KeyedEncodingContainer<NestedKey> {
             .init(_KeyedEncoder<NestedKey>())
         }
 
@@ -127,8 +123,7 @@ public struct SQLiteDataEncoder {
             self.encoder.result = .data(.null)
         }
 
-        mutating func encode<T>(_ value: T) throws
-        where T: Encodable {
+        mutating func encode<T: Encodable>(_ value: T) throws {
             let data = try SQLiteDataEncoder().encode(value)
             self.encoder.result = .data(data)
         }
@@ -141,6 +136,6 @@ private struct AnyEncodable: Encodable {
         self.encodable = encodable
     }
     func encode(to encoder: Encoder) throws {
-        try self.encodable.encode(to: encoder)
+        try encodable.encode(to: encoder)
     }
 }

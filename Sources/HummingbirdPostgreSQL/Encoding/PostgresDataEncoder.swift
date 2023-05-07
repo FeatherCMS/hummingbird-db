@@ -39,7 +39,7 @@ public final class PostgresDataEncoder {
             }
         }
         catch is _Encoder.AssociativeValueSentinel {
-            return try PostgresData(jsonb: self.json.encode(value))
+            return try PostgresData(jsonb: json.encode(value))
         }
     }
 

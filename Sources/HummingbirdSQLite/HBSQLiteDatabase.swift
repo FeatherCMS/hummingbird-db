@@ -20,15 +20,16 @@ struct HBSQLiteDatabase: HBDatabase {
         let pool = service.poolGroup.getConnectionPool(on: eventLoop)
         return try await pool.lease(logger: logger, process: block)
     }
-    
+
     private func prepare(
         query: any HBDatabaseQueryInterface
     ) throws -> (String, [SQLiteData]) {
         var patterns: [String: SQLiteData] = [:]
-        
-        if let b = query.bindings {
-            let res = try SQLiteRowEncoder().encode(b)
-            
+
+        let encoder = SQLiteRowEncoder()
+        for b in query.bindings {
+            let res = try encoder.encode(b)
+
             for item in res {
                 patterns[item.0] = item.1
             }
@@ -39,7 +40,7 @@ struct HBSQLiteDatabase: HBDatabase {
         var currentKey = ""
         var currentIndex = 1
         var currentBindings: [SQLiteData] = []
-        
+
         for c in query.unsafeSQL {
             if c == ":" {
                 if isOpened {
@@ -50,7 +51,7 @@ struct HBSQLiteDatabase: HBDatabase {
                     else {
                         currentBindings.append(.null)
                     }
-                    
+
                     currentKey = ""
                     currentIndex += 1
                 }
@@ -64,12 +65,12 @@ struct HBSQLiteDatabase: HBDatabase {
                 bindingQuery += String(c)
             }
         }
-        if isOpened {//} || currentIndex - 1 != patterns.count { // strict mode?
+        if isOpened {  //} || currentIndex - 1 != patterns.count { // strict mode?
             throw HBDatabaseError.binding
         }
-        
-        print(patterns, bindingQuery, currentBindings)
-        
+
+        //        print(patterns, bindingQuery, currentBindings)
+
         return (bindingQuery, currentBindings)
     }
 
