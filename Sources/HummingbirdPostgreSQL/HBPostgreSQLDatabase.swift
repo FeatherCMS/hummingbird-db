@@ -18,17 +18,6 @@ struct HBPostgreSQLDatabase: HBDatabase {
         return try await pool.lease(logger: logger, process: block)
     }
 
-    func executeRaw(_ queries: [String]) async throws {
-        try await run { connection in
-            for query in queries {
-                _ = try await connection.query(
-                    .init(stringLiteral: query)
-                )
-                .get()
-            }
-        }
-    }
-
     private func prepare(
         query: HBDatabaseQuery
     ) throws -> (String, PostgresBindings) {
@@ -75,6 +64,7 @@ struct HBPostgreSQLDatabase: HBDatabase {
         if isOpened {  //} || currentIndex - 1 != patterns.count { // strict mode?
             throw HBDatabaseError.binding
         }
+        print("----------------", bindingQuery, currentBindings)
         return (bindingQuery, currentBindings)
     }
 

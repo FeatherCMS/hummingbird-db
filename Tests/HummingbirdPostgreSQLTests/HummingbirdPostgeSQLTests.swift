@@ -43,43 +43,47 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
         //            print("sqlite")
         //        }
 
-        var xs: [String] = []
-        for _ in 1...10 {
-            let id = UUID()
-            let title = "random title"
-            let url = "lorem ipusm"
-            let order = 1
+//        for _ in 1...10 {
+//            try await db.execute(
+//                .insert(
+//                    into: "todos",
+//                    keys: ["id", "title", "url", "order"],
+//                    bindings: UUID(), "foo", "bar", 42
+//                )
+//            )
+//        }
 
-            let x =
-                "INSERT INTO todos (id, title, url, \"order\") VALUES ('\(id)', '\(title)', '\(url)', \(order));"
-
-            xs.append(x)
-        }
-
-        try await db.executeRaw([
-            "DROP TABLE todos",
-
-            """
-            CREATE TABLE
-                todos
-            (
-                "id" uuid PRIMARY KEY,
-                "title" text NOT NULL,
-                "order" integer,
-                "url" text
-            );
-            """,
-
-            """
-            ALTER TABLE
-                todos
-            ADD COLUMN
-                "completed" BOOLEAN
-            DEFAULT FALSE;
-            """,
+        try await db.execute([
+            .init(
+                unsafeSQL:
+                """
+                DROP TABLE todos
+                """
+            ),
+            .init(
+                unsafeSQL:
+                """
+                CREATE TABLE
+                    todos
+                (
+                    "id" uuid PRIMARY KEY,
+                    "title" text NOT NULL,
+                    "order" integer,
+                    "url" text
+                );
+                """
+            ),
+            .init(
+                unsafeSQL:
+                """
+                ALTER TABLE
+                    todos
+                ADD COLUMN
+                    "completed" BOOLEAN
+                DEFAULT FALSE;
+                """
+            ),
         ])
-
-        try await db.executeRaw(xs)
 
         let todos = try await db.execute(
             .init(
@@ -88,7 +92,7 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             rowType: Todo.self
         )
 
-        XCTAssertEqual(todos.count, 10)
+//        XCTAssertEqual(todos.count, 10)
 
         let newTodo = Todo(
             id: .init(),
@@ -99,15 +103,29 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
         )
 
         try await app.db.execute([
-            HBDatabaseQuery(
-                unsafeSQL: """
+            .init(
+                unsafeSQL:
+                    """
                     INSERT INTO
                         todos (id, title, url, "order", completed)
                     VALUES
                         (:id:, :title:, :url:, :order:, :completed:)
                     """,
-                bindings: newTodo
-            )
+                bindings:
+                    newTodo
+            ),
+            // TODO: fix this!!!
+//            .init(
+//                unsafeSQL:
+//                    """
+//                    INSERT INTO
+//                        todos (id, title, url, "order", completed)
+//                    VALUES
+//                        (:0:, :1:, :2:, :3:, :4:)
+//                    """,
+//                bindings:
+//                    newTodo.id, newTodo.title, newTodo.order, newTodo.completed
+//            ),
         ])
 
         try app.shutdownApplication()

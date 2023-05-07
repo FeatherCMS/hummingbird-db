@@ -1,6 +1,5 @@
 import PostgresNIO
 
-
 struct PostgreSQLRowEncoder {
     
     enum KeyEncodingStrategy {
