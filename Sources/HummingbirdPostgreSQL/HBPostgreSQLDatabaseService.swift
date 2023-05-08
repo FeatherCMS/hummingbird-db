@@ -1,14 +1,25 @@
-import NIO
-import Logging
+import Hummingbird
 import HummingbirdDatabase
+import Logging
+import NIO
+import PostgresNIO
 
 struct HBPostgreSQLDatabaseService: HBDatabaseService {
-    
+
+    let poolGroup: HBConnectionPoolGroup<HBPostgreSQLConnectionSource>
+
     init(
-        host: String,
-        port: Int = 5432
+        configuration: PostgresConnection.Configuration,
+        maxConnections: Int,
+        eventLoopGroup: EventLoopGroup,
+        logger: Logger
     ) {
-        // TODO
+        self.poolGroup = .init(
+            source: .init(configuration: configuration),
+            maxConnections: maxConnections,
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
     }
 
     func make(
@@ -20,5 +31,9 @@ struct HBPostgreSQLDatabaseService: HBDatabaseService {
             logger: logger,
             eventLoop: eventLoop
         )
+    }
+
+    func shutdown() throws {
+        try poolGroup.close().wait()
     }
 }

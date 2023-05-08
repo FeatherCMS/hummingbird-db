@@ -1,18 +1,23 @@
 import Hummingbird
-import HummingbirdServices
 import HummingbirdDatabase
+import HummingbirdServices
 import Logging
+import NIOCore
+import PostgresNIO
 
+extension HBApplication.Services {
 
-public extension HBApplication.Services {
-
-    func setUpPostgreSQLDatabase(
-        host: String,
-        port: Int = 5432
+    public func setUpPostgreSQLDatabase(
+        configuration: PostgresConnection.Configuration,
+        maxConnections: Int = 100,
+        eventLoopGroup: EventLoopGroup,
+        logger: Logger
     ) {
         db = HBPostgreSQLDatabaseService(
-            host: host,
-            port: port
+            configuration: configuration,
+            maxConnections: maxConnections,
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
         )
     }
 }
