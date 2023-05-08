@@ -13,6 +13,21 @@ struct Todo: Codable {
     let completed: Bool?
 }
 
+extension HBDatabaseQuery {
+
+    static func insert(
+        into table: String,
+        keys: [String],
+        bindings: any Encodable...
+    ) -> HBDatabaseQuery {
+        let t = "`\(table)`"
+        let k = keys.map { "`\($0)`" }.joined(separator: ",")
+        let b = (0..<keys.count).map { ":\($0):" }.joined(separator: ",")
+        let sql = "INSERT INTO \(t) (\(k)) VALUES (\(b))"
+        return .init(unsafeSQL: sql, bindings: bindings)
+    }
+}
+
 final class HummingbirdSQLiteTests: XCTestCase {
 
     private func createTestApp(path: String) -> HBApplication {

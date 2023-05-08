@@ -7,6 +7,21 @@ import XCTest
 
 @testable import HummingbirdPostgreSQL
 
+extension HBDatabaseQuery {
+
+    static func insert(
+        into table: String,
+        keys: [String],
+        bindings: any Encodable...
+    ) -> HBDatabaseQuery {
+        let t = "`\(table)`"
+        let k = keys.map { "`\($0)`" }.joined(separator: ",")
+        let b = (0..<keys.count).map { ":\($0):" }.joined(separator: ",")
+        let sql = "INSERT INTO \(t) (\(k)) VALUES (\(b))"
+        return .init(unsafeSQL: sql, bindings: bindings)
+    }
+}
+
 final class HummingbirdPostgreSQLTests: XCTestCase {
 
     func testExample() async throws {
@@ -36,74 +51,77 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
         guard let db = app.db as? HBPostgreSQLDatabase else {
             return XCTFail()
         }
-
-        //        switch app.db.type {
-        //        case .postgresql:
-        //            print("postgresql")
-        //        case .sqlite:
-        //            print("sqlite")
-        //        }
-
-        //        for _ in 1...10 {
-        //            try await db.execute(
-        //                .insert(
-        //                    into: "todos",
-        //                    keys: ["id", "title", "url", "order"],
-        //                    bindings: UUID(), "foo", "bar", 42
-        //                )
-        //            )
-        //        }
-
-        //        try await db.execute([
-        //            .init(
-        //                unsafeSQL:
-        //                """
-        //                DROP TABLE todos
-        //                """
-        //            ),
-        //            .init(
-        //                unsafeSQL:
-        //                """
-        //                CREATE TABLE
-        //                    todos
-        //                (
-        //                    "id" uuid PRIMARY KEY,
-        //                    "title" text NOT NULL,
-        //                    "order" integer,
-        //                    "url" text
-        //                );
-        //                """
-        //            ),
-        //            .init(
-        //                unsafeSQL:
-        //                """
-        //                ALTER TABLE
-        //                    todos
-        //                ADD COLUMN
-        //                    "completed" BOOLEAN
-        //                DEFAULT FALSE;
-        //                """
-        //            ),
-        //        ])
-
-        //        let todos = try await db.execute(
-        //            .init(
-        //                unsafeSQL: "SELECT * FROM todos"
-        //            ),
-        //            rowType: Todo.self
-        //        )
-
-        //        XCTAssertEqual(todos.count, 10)
-
-        let newTodo = Todo(
-            id: .init(),
-            title: "yeah",
-            order: 420,
-            url: "spacex.com",
-            completed: true
-        )
-
         do {
+
+            //        switch app.db.type {
+            //        case .postgresql:
+            //            print("postgresql")
+            //        case .sqlite:
+            //            print("sqlite")
+            //        }
+
+            for _ in 1...10 {
+                try await db.execute(
+                    .insert(
+                        into: "todos",
+                        keys: ["id", "title", "url", "order"],
+                        bindings: UUID(),
+                        "foo",
+                        "bar",
+                        42
+                    )
+                )
+            }
+
+            try await db.execute([
+                .init(
+                    unsafeSQL:
+                        """
+                        DROP TABLE todos
+                        """
+                ),
+                .init(
+                    unsafeSQL:
+                        """
+                        CREATE TABLE
+                            todos
+                        (
+                            "id" uuid PRIMARY KEY,
+                            "title" text NOT NULL,
+                            "order" integer,
+                            "url" text
+                        );
+                        """
+                ),
+                .init(
+                    unsafeSQL:
+                        """
+                        ALTER TABLE
+                            todos
+                        ADD COLUMN
+                            "completed" BOOLEAN
+                        DEFAULT FALSE;
+                        """
+                ),
+            ])
+
+            let todos = try await db.execute(
+                .init(
+                    unsafeSQL: "SELECT * FROM todos"
+                ),
+                rowType: Todo.self
+            )
+
+            XCTAssertEqual(todos.count, 10)
+
+            let newTodo = Todo(
+                id: .init(),
+                title: "yeah",
+                order: 420,
+                url: "spacex.com",
+                completed: true
+            )
+
             try await app.db.execute([
                 .init(
                     unsafeSQL:
