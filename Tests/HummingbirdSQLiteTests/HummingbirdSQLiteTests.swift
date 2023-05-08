@@ -156,8 +156,6 @@ final class HummingbirdSQLiteTests: XCTestCase {
                 url: nil,
                 completed: true
             )
-
-            
             
             try await db.execute(
                 .insert(

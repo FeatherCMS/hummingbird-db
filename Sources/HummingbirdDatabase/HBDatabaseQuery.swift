@@ -24,7 +24,6 @@ public extension HBDatabaseQuery {
         let k = keys.map { "`\($0)`" }.joined(separator: ",")
         let b = (0..<keys.count).map { ":\($0):" }.joined(separator: ",")
         let sql = "INSERT INTO \(t) (\(k)) VALUES (\(b))"
-        print(sql)
         return .init(unsafeSQL: sql, bindings: bindings)
     }
 }

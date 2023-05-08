@@ -1,4 +1,5 @@
 import PostgresNIO
+import Foundation
 
 struct PostgreSQLRowEncoder {
     
@@ -32,7 +33,23 @@ struct PostgreSQLRowEncoder {
     func encode<E: Encodable>(
         _ encodable: E
     ) throws -> [(String, PostgresData)] {
-        let encoder = _Encoder(options: options, index: indexCounter.index)
+        var data: PostgresData?
+        if let e = encodable as? PostgresEncodable {
+            var buffer: ByteBuffer = .init()
+            try e.encode(into: &buffer, context: .default)
+            let type = type(of: e)
+            data = .init(
+                type: type.psqlType,
+                typeModifier: nil,
+                formatCode: type.psqlFormat,
+                value: buffer
+            )
+        }
+        let encoder = _Encoder(
+            options: options,
+            index: indexCounter.index,
+            data: data
+        )
         try encodable.encode(to: encoder)
         indexCounter.index += 1
         return encoder.bindings
@@ -47,18 +64,23 @@ private final class _Encoder: Encoder, SingleValueEncodingContainer {
 
     let options: PostgreSQLRowEncoder._Options
     let index: Int
+    let data: PostgresData?
 
     var codingPath: [CodingKey] { [] }
     var userInfo: [CodingUserInfoKey: Any] { [:] }
-
     var bindings: [(String, PostgresData)]
 
-    init(options: PostgreSQLRowEncoder._Options, index: Int) {
+    init(
+        options: PostgreSQLRowEncoder._Options,
+        index: Int,
+        data: PostgresData?
+    ) {
         self.bindings = []
         self.options = options
         self.index = index
+        self.data = data
     }
-
+    
     func container<Key: CodingKey>(keyedBy type: Key.Type)
         -> KeyedEncodingContainer<Key>
     {
@@ -78,8 +100,13 @@ private final class _Encoder: Encoder, SingleValueEncodingContainer {
     }
 
     func encode<T: Encodable>(_ value: T) throws {
-        let data = try PostgresDataEncoder().encode(value)
-        bindings.append((String(index), data))
+        if let originalData = data {
+            bindings.append((String(index), originalData))
+        }
+        else {
+            let data = try PostgresDataEncoder().encode(value)
+            bindings.append((String(index), data))
+        }
     }
 
     func _convertToSnakeCase(_ stringKey: String) -> String {

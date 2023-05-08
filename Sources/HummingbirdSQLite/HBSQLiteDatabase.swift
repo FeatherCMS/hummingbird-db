@@ -65,11 +65,6 @@ struct HBSQLiteDatabase: HBDatabase {
         if isOpened {  //} || currentIndex - 1 != patterns.count { // strict mode?
             throw HBDatabaseError.binding
         }
-
-//        print("----------------------------")
-//        print(patterns, bindingQuery, currentBindings)
-//        print("----------------------------")
-
         return (bindingQuery, currentBindings)
     }
 

@@ -64,7 +64,6 @@ struct HBPostgreSQLDatabase: HBDatabase {
         if isOpened {  //} || currentIndex - 1 != patterns.count { // strict mode?
             throw HBDatabaseError.binding
         }
-        print("----------------", bindingQuery, currentBindings)
         return (bindingQuery, currentBindings)
     }
 
