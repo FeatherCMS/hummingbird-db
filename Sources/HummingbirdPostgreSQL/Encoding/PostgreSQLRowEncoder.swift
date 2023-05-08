@@ -1,8 +1,8 @@
-import PostgresNIO
 import Foundation
+import PostgresNIO
 
 struct PostgreSQLRowEncoder {
-    
+
     enum KeyEncodingStrategy {
         /// A key encoding strategy that doesn't change key names during encoding.
         case useDefaultKeys
@@ -23,7 +23,7 @@ struct PostgreSQLRowEncoder {
             keyEncodingStrategy: keyEncodingStrategy
         )
     }
-    
+
     private var indexCounter = _IndexCounter()
     var prefix: String? = nil
     var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
@@ -80,7 +80,7 @@ private final class _Encoder: Encoder, SingleValueEncodingContainer {
         self.index = index
         self.data = data
     }
-    
+
     func container<Key: CodingKey>(keyedBy type: Key.Type)
         -> KeyedEncodingContainer<Key>
     {
@@ -94,7 +94,7 @@ private final class _Encoder: Encoder, SingleValueEncodingContainer {
     func singleValueContainer() -> SingleValueEncodingContainer {
         self
     }
-    
+
     func encodeNil() throws {
         bindings.append((String(index), .null))
     }
@@ -152,7 +152,7 @@ private final class _Encoder: Encoder, SingleValueEncodingContainer {
         }
         return snakeCasedString
     }
-    
+
 }
 
 private struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {

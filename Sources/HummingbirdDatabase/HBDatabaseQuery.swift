@@ -13,9 +13,9 @@ public struct HBDatabaseQuery {
     }
 }
 
-public extension HBDatabaseQuery {
+extension HBDatabaseQuery {
 
-    static func insert(
+    public static func insert(
         into table: String,
         keys: [String],
         bindings: any Encodable...

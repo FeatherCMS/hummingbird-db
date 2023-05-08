@@ -66,7 +66,10 @@ final class HummingbirdSQLiteTests: XCTestCase {
                             (:0:, :1:, :2:, :3:)
                         """,
                     bindings:
-                        id, title, url, order
+                        id,
+                    title,
+                    url,
+                    order
                 )
             )
         }
@@ -74,32 +77,32 @@ final class HummingbirdSQLiteTests: XCTestCase {
         try await app.db.execute([
             .init(
                 unsafeSQL:
-                """
-                DROP TABLE IF EXISTS todos
-                """
+                    """
+                    DROP TABLE IF EXISTS todos
+                    """
             ),
             .init(
                 unsafeSQL:
-                """
-                CREATE TABLE
-                    todos
-                (
-                    "id" uuid PRIMARY KEY,
-                    "title" text NOT NULL,
-                    "order" integer,
-                    "url" text
-                );
-                """
+                    """
+                    CREATE TABLE
+                        todos
+                    (
+                        "id" uuid PRIMARY KEY,
+                        "title" text NOT NULL,
+                        "order" integer,
+                        "url" text
+                    );
+                    """
             ),
             .init(
                 unsafeSQL:
-                """
-                ALTER TABLE
-                    todos
-                ADD COLUMN
-                    "completed" BOOLEAN
-                DEFAULT FALSE;
-                """
+                    """
+                    ALTER TABLE
+                        todos
+                    ADD COLUMN
+                        "completed" BOOLEAN
+                    DEFAULT FALSE;
+                    """
             ),
         ])
 
@@ -107,13 +110,11 @@ final class HummingbirdSQLiteTests: XCTestCase {
             HBDatabaseQuery(
                 unsafeSQL:
                     #"CREATE TABLE "scores" ("score" INTEGER NOT NULL);"#,
-                bindings:
-                    ["foo": 1, "bar": 2]
+                bindings: ["foo": 1, "bar": 2]
             ),
             HBDatabaseQuery(
                 unsafeSQL: #"INSERT INTO scores (score) VALUES (:1:);"#,
-                bindings:
-                    ["1": 1]
+                bindings: ["1": 1]
             ),
         ])
 
@@ -129,23 +130,23 @@ final class HummingbirdSQLiteTests: XCTestCase {
             try await db.execute([
                 .init(
                     unsafeSQL:
-                    """
-                    CREATE TABLE
-                        todos
-                    (
-                        "id" text NOT NULL PRIMARY KEY,
-                        "title" text NOT NULL,
-                        "order" integer,
-                        "url" text,
-                        "completed" BOOLEAN DEFAULT FALSE
-                    )
-                    """
+                        """
+                        CREATE TABLE
+                            todos
+                        (
+                            "id" text NOT NULL PRIMARY KEY,
+                            "title" text NOT NULL,
+                            "order" integer,
+                            "url" text,
+                            "completed" BOOLEAN DEFAULT FALSE
+                        )
+                        """
                 ),
                 .init(
                     unsafeSQL:
-                    """
-                    CREATE TABLE foo ("bar" integer)
-                    """
+                        """
+                        CREATE TABLE foo ("bar" integer)
+                        """
                 ),
             ])
 
@@ -156,12 +157,15 @@ final class HummingbirdSQLiteTests: XCTestCase {
                 url: nil,
                 completed: true
             )
-            
+
             try await db.execute(
                 .insert(
                     into: "todos",
                     keys: ["id", "title", "url", "order"],
-                    bindings: UUID(), "foo", "bar", 42
+                    bindings: UUID(),
+                    "foo",
+                    "bar",
+                    42
                 )
             )
 
@@ -184,9 +188,13 @@ final class HummingbirdSQLiteTests: XCTestCase {
                             (:0:, :title:, :url:, :3:)
                         """,
                     bindings:
-                        UUID(), "hello", "valami", 12, newTodo
+                        UUID(),
+                    "hello",
+                    "valami",
+                    12,
+                    newTodo
                 ),
-                
+
                 .init(
                     unsafeSQL: """
                         INSERT INTO
@@ -195,7 +203,8 @@ final class HummingbirdSQLiteTests: XCTestCase {
                             (:0:), (:1:)
                         """,
                     bindings:
-                        23, 42
+                        23,
+                    42
                 ),
             ])
         }
@@ -208,46 +217,46 @@ final class HummingbirdSQLiteTests: XCTestCase {
         try await app.db.execute([
             .init(
                 unsafeSQL:
-                """
-                CREATE TABLE products(
-                    product text NOT null
-                );
-                """
+                    """
+                    CREATE TABLE products(
+                        product text NOT null
+                    );
+                    """
             ),
             .init(
                 unsafeSQL:
-                """
-                INSERT INTO products(product)
-                VALUES('P1'),('P2'),('P3');
-                """
+                    """
+                    INSERT INTO products(product)
+                    VALUES('P1'),('P2'),('P3');
+                    """
             ),
             .init(
                 unsafeSQL:
-                """
-                CREATE TABLE calendars(
-                    y int NOT NULL,
-                    m int NOT NULL
-                );
-                """
+                    """
+                    CREATE TABLE calendars(
+                        y int NOT NULL,
+                        m int NOT NULL
+                    );
+                    """
             ),
             .init(
                 unsafeSQL:
-                """
-                INSERT INTO calendars(y,m)
-                VALUES
-                    (2019,1),
-                    (2019,2),
-                    (2019,3),
-                    (2019,4),
-                    (2019,5),
-                    (2019,6),
-                    (2019,7),
-                    (2019,8),
-                    (2019,9),
-                    (2019,10),
-                    (2019,11),
-                    (2019,12);
-                """
+                    """
+                    INSERT INTO calendars(y,m)
+                    VALUES
+                        (2019,1),
+                        (2019,2),
+                        (2019,3),
+                        (2019,4),
+                        (2019,5),
+                        (2019,6),
+                        (2019,7),
+                        (2019,8),
+                        (2019,9),
+                        (2019,10),
+                        (2019,11),
+                        (2019,12);
+                    """
             ),
         ])
 
@@ -260,11 +269,11 @@ final class HummingbirdSQLiteTests: XCTestCase {
         let res = try await app.db.execute(
             .init(
                 unsafeSQL:
-                """
-                SELECT *
-                FROM products
-                CROSS JOIN calendars;
-                """
+                    """
+                    SELECT *
+                    FROM products
+                    CROSS JOIN calendars;
+                    """
             ),
             rowType: Joined.self
         )

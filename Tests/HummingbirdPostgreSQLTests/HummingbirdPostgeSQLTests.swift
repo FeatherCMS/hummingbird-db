@@ -2,8 +2,8 @@ import Hummingbird
 import HummingbirdDatabase
 import Logging
 import NIO
-import XCTest
 import PostgresNIO
+import XCTest
 
 @testable import HummingbirdPostgreSQL
 
@@ -44,56 +44,56 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
         //            print("sqlite")
         //        }
 
-//        for _ in 1...10 {
-//            try await db.execute(
-//                .insert(
-//                    into: "todos",
-//                    keys: ["id", "title", "url", "order"],
-//                    bindings: UUID(), "foo", "bar", 42
-//                )
-//            )
-//        }
+        //        for _ in 1...10 {
+        //            try await db.execute(
+        //                .insert(
+        //                    into: "todos",
+        //                    keys: ["id", "title", "url", "order"],
+        //                    bindings: UUID(), "foo", "bar", 42
+        //                )
+        //            )
+        //        }
 
-//        try await db.execute([
-//            .init(
-//                unsafeSQL:
-//                """
-//                DROP TABLE todos
-//                """
-//            ),
-//            .init(
-//                unsafeSQL:
-//                """
-//                CREATE TABLE
-//                    todos
-//                (
-//                    "id" uuid PRIMARY KEY,
-//                    "title" text NOT NULL,
-//                    "order" integer,
-//                    "url" text
-//                );
-//                """
-//            ),
-//            .init(
-//                unsafeSQL:
-//                """
-//                ALTER TABLE
-//                    todos
-//                ADD COLUMN
-//                    "completed" BOOLEAN
-//                DEFAULT FALSE;
-//                """
-//            ),
-//        ])
+        //        try await db.execute([
+        //            .init(
+        //                unsafeSQL:
+        //                """
+        //                DROP TABLE todos
+        //                """
+        //            ),
+        //            .init(
+        //                unsafeSQL:
+        //                """
+        //                CREATE TABLE
+        //                    todos
+        //                (
+        //                    "id" uuid PRIMARY KEY,
+        //                    "title" text NOT NULL,
+        //                    "order" integer,
+        //                    "url" text
+        //                );
+        //                """
+        //            ),
+        //            .init(
+        //                unsafeSQL:
+        //                """
+        //                ALTER TABLE
+        //                    todos
+        //                ADD COLUMN
+        //                    "completed" BOOLEAN
+        //                DEFAULT FALSE;
+        //                """
+        //            ),
+        //        ])
 
-//        let todos = try await db.execute(
-//            .init(
-//                unsafeSQL: "SELECT * FROM todos"
-//            ),
-//            rowType: Todo.self
-//        )
+        //        let todos = try await db.execute(
+        //            .init(
+        //                unsafeSQL: "SELECT * FROM todos"
+        //            ),
+        //            rowType: Todo.self
+        //        )
 
-//        XCTAssertEqual(todos.count, 10)
+        //        XCTAssertEqual(todos.count, 10)
 
         let newTodo = Todo(
             id: .init(),
@@ -118,14 +118,15 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
                 ),
                 .init(
                     unsafeSQL:
-                    """
-                    INSERT INTO
-                        todos (id, title, url, "order", completed)
-                    VALUES
-                        (:0:, :1:, :2:, :3:, :4:)
-                    """,
+                        """
+                        INSERT INTO
+                            todos (id, title, url, "order", completed)
+                        VALUES
+                            (:0:, :1:, :2:, :3:, :4:)
+                        """,
                     bindings:
-                        UUID(), "foo"
+                        UUID(),
+                    "foo"
                 ),
             ])
         }

@@ -58,7 +58,7 @@ private final class _Decoder: Decoder {
     func singleValueContainer() throws -> SingleValueDecodingContainer {
         _SingleValueDecodingContainer(self)
     }
-    
+
     private func jsonDecoder() throws -> Decoder {
         let data: Data
         switch self.data {
@@ -95,4 +95,3 @@ private struct _SingleValueDecodingContainer: SingleValueDecodingContainer {
         try SQLiteDataDecoder().decode(T.self, from: decoder.data)
     }
 }
-

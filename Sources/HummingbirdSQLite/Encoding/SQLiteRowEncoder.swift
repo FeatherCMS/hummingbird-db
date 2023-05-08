@@ -22,7 +22,7 @@ struct SQLiteRowEncoder {
             keyEncodingStrategy: keyEncodingStrategy
         )
     }
-    
+
     private var indexCounter = _IndexCounter()
     var prefix: String? = nil
     var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
@@ -73,11 +73,11 @@ private final class _Encoder: Encoder, SingleValueEncodingContainer {
     func singleValueContainer() -> SingleValueEncodingContainer {
         self
     }
-    
+
     func encodeNil() throws {
         bindings.append((String(index), .null))
     }
-    
+
     func encode<T: Encodable>(_ value: T) throws {
         let data = try SQLiteDataEncoder().encode(value)
         bindings.append((String(index), data))

@@ -84,7 +84,9 @@ private struct _Decoder: Decoder {
     }
 }
 
-private struct _KeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
+private struct _KeyedDecodingContainer<Key: CodingKey>:
+    KeyedDecodingContainerProtocol
+{
 
     let decoder: _Decoder
     let row: SQLiteRow
