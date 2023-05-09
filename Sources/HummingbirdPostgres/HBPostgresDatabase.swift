@@ -1,19 +1,19 @@
 import FeatherDatabase
-import FeatherSQLiteDatabase
+import FeatherPostgresDatabase
 import Logging
 import NIOCore
-import SQLiteNIO
+import PostgresNIO
 
-struct HBSQLiteDatabase: FeatherDatabase {
+struct HBPostgresDatabase: FeatherDatabase {
 
-    let type: FeatherDatabaseType = .sqlite
+    let type: FeatherDatabaseType = .postgres
 
-    let service: HBSQLiteDatabaseService
+    let service: HBPostgresDatabaseService
     let logger: Logger
     let eventLoop: EventLoop
 
     func run<T>(
-        _ block: @escaping ((SQLiteConnection) async throws -> T)
+        _ block: @escaping ((PostgresConnection) async throws -> T)
     ) async throws -> T {
         let pool = service.poolGroup.getConnectionPool(on: eventLoop)
         return try await pool.lease(logger: logger, process: block)
@@ -21,7 +21,7 @@ struct HBSQLiteDatabase: FeatherDatabase {
 
     func execute(_ queries: [FeatherDatabaseQuery]) async throws {
         _ = try await run { connection in
-            try await FeatherSQLiteDatabase(
+            try await FeatherPostgresDatabase(
                 connection: connection,
                 logger: logger,
                 eventLoop: eventLoop
@@ -35,7 +35,7 @@ struct HBSQLiteDatabase: FeatherDatabase {
         rowType: T.Type
     ) async throws -> [T] {
         try await run { connection in
-            try await FeatherSQLiteDatabase(
+            try await FeatherPostgresDatabase(
                 connection: connection,
                 logger: logger,
                 eventLoop: eventLoop

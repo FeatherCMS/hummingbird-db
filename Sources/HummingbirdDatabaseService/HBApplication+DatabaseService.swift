@@ -1,5 +1,6 @@
 import Hummingbird
 import HummingbirdServices
+import FeatherDatabase
 import Logging
 
 extension HBApplication.Services {
@@ -18,7 +19,7 @@ extension HBApplication.Services {
 
 extension HBApplication {
 
-    public var db: HBDatabase {
+    public var db: FeatherDatabase {
         services.db.make(
             logger: logger,
             eventLoop: eventLoopGroup.next()
@@ -28,7 +29,7 @@ extension HBApplication {
 
 extension HBRequest {
 
-    public var db: HBDatabase {
+    public var db: FeatherDatabase {
         application.services.db.make(
             logger: logger,
             eventLoop: eventLoop

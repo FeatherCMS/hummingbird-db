@@ -2,10 +2,10 @@ import Foundation
 import NIOCore
 import SQLiteNIO
 
-public struct SQLiteDataEncoder {
-    public init() {}
+struct SQLiteDataEncoder {
+    init() {}
 
-    public func encode(_ value: Encodable) throws -> SQLiteData {
+    func encode(_ value: Encodable) throws -> SQLiteData {
         if let custom = value as? SQLiteDataConvertible,
             let data = custom.sqliteData
         {

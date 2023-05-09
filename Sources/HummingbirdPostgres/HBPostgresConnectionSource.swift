@@ -4,7 +4,7 @@ import PostgresNIO
 
 extension PostgresConnection: HBAsyncConnection {}
 
-struct HBPostgreSQLConnectionSource: HBAsyncConnectionSource {
+struct HBPostgresConnectionSource: HBAsyncConnectionSource {
     typealias Connection = PostgresConnection
 
     let configuration: Connection.Configuration

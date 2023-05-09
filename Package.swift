@@ -7,8 +7,12 @@ let package = Package(
        .macOS(.v12),
     ],
     products: [
-        .library(name: "HummingbirdDatabase", targets: ["HummingbirdDatabase"]),
-        .library(name: "HummingbirdPostgreSQL", targets: ["HummingbirdPostgreSQL"]),
+        .library(name: "FeatherDatabase", targets: ["FeatherDatabase"]),
+        .library(name: "FeatherPostgresDatabase", targets: ["FeatherPostgresDatabase"]),
+        .library(name: "FeatherSQLiteDatabase", targets: ["FeatherSQLiteDatabase"]),
+
+        .library(name: "HummingbirdDatabaseService", targets: ["HummingbirdDatabaseService"]),
+        .library(name: "HummingbirdPostgres", targets: ["HummingbirdPostgres"]),
         .library(name: "HummingbirdSQLite", targets: ["HummingbirdSQLite"]),
     ],
     dependencies: [
@@ -18,26 +22,48 @@ let package = Package(
         .package(url: "https://github.com/vapor/sqlite-nio", from: "1.5.0"),
     ],
     targets: [
-        .target(name: "HummingbirdDatabase", dependencies: [
-            .product(name: "Hummingbird", package: "hummingbird"),
-            .product(name: "HummingbirdServices", package: "hummingbird-services"),
+        .target(name: "FeatherDatabase", dependencies: [
         ]),
-        .target(name: "HummingbirdPostgreSQL", dependencies: [
-            .target(name: "HummingbirdDatabase"),
+        .target(name: "FeatherPostgresDatabase", dependencies: [
+            .target(name: "FeatherDatabase"),
             .product(name: "PostgresNIO", package: "postgres-nio"),
         ]),
-        .target(name: "HummingbirdSQLite", dependencies: [
-            .target(name: "HummingbirdDatabase"),
+        .target(name: "FeatherSQLiteDatabase", dependencies: [
+            .target(name: "FeatherDatabase"),
             .product(name: "SQLiteNIO", package: "sqlite-nio"),
         ]),
-        .testTarget(name: "HummingbirdDatabaseTests", dependencies: [
-            .target(name: "HummingbirdDatabase"),
+        
+        .target(name: "HummingbirdDatabaseService", dependencies: [
+            .product(name: "Hummingbird", package: "hummingbird"),
+            .product(name: "HummingbirdServices", package: "hummingbird-services"),
+            .target(name: "FeatherDatabase"),
         ]),
-        .testTarget(name: "HummingbirdPostgreSQLTests", dependencies: [
-            .target(name: "HummingbirdPostgreSQL"),
+        .target(name: "HummingbirdPostgres", dependencies: [
+            .target(name: "HummingbirdDatabaseService"),
+            .target(name: "FeatherPostgresDatabase"),
+        ]),
+        .target(name: "HummingbirdSQLite", dependencies: [
+            .target(name: "HummingbirdDatabaseService"),
+            .target(name: "FeatherSQLiteDatabase"),
+        ]),
+        .testTarget(name: "HummingbirdDatabaseTests", dependencies: [
+            .target(name: "HummingbirdDatabaseService"),
+        ]),
+        .testTarget(name: "HummingbirdPostgresTests", dependencies: [
+            .target(name: "HummingbirdPostgres"),
         ]),
         .testTarget(name: "HummingbirdSQLiteTests", dependencies: [
             .target(name: "HummingbirdSQLite"),
+        ]),
+        
+        .testTarget(name: "FeatherDatabaseTests", dependencies: [
+            .target(name: "FeatherDatabase"),
+        ]),
+        .testTarget(name: "FeatherPostgresDatabaseTests", dependencies: [
+            .target(name: "FeatherPostgresDatabase"),
+        ]),
+        .testTarget(name: "FeatherSQLiteDatabaseTests", dependencies: [
+            .target(name: "FeatherSQLiteDatabase"),
         ]),
     ]
 )

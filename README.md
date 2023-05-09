@@ -15,7 +15,7 @@
 Database provider services
 
 ```swift
-.product(name: "HummingbirdPostgreSQL", package: "hummingbird-db"),
+.product(name: "HummingbirdPostgres", package: "hummingbird-db"),
 .product(name: "HummingbirdSQLite", package: "hummingbird-db"),
 ```    
 

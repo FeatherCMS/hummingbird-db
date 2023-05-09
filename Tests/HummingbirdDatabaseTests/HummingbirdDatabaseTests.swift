@@ -1,5 +1,5 @@
 import Hummingbird
-import HummingbirdDatabase
+import HummingbirdDatabaseService
 import Logging
 import NIO
 import XCTest
@@ -28,7 +28,7 @@ final class HummingbirdDatabaseTests: XCTestCase {
 
                     // SQLite
                     //            newString += "?"
-                    // PostgreSQL
+                    // Postgres
                     bindingQuery += "$"
                     bindingQuery += String(currentIndex)
 

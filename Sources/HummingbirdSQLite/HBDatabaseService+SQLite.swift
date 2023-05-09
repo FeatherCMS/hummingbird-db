@@ -1,6 +1,6 @@
 import Hummingbird
-import HummingbirdDatabase
 import HummingbirdServices
+import HummingbirdDatabaseService
 import Logging
 import SQLiteNIO
 

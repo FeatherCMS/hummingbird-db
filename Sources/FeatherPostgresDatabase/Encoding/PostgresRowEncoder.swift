@@ -1,7 +1,7 @@
 import Foundation
 import PostgresNIO
 
-struct PostgreSQLRowEncoder {
+struct PostgresRowEncoder {
 
     enum KeyEncodingStrategy {
         /// A key encoding strategy that doesn't change key names during encoding.
@@ -62,7 +62,7 @@ private final class _IndexCounter {
 
 private final class _Encoder: Encoder, SingleValueEncodingContainer {
 
-    let options: PostgreSQLRowEncoder._Options
+    let options: PostgresRowEncoder._Options
     let index: Int
     let data: PostgresData?
 
@@ -71,7 +71,7 @@ private final class _Encoder: Encoder, SingleValueEncodingContainer {
     var bindings: [(String, PostgresData)]
 
     init(
-        options: PostgreSQLRowEncoder._Options,
+        options: PostgresRowEncoder._Options,
         index: Int,
         data: PostgresData?
     ) {
