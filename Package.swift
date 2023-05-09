@@ -11,7 +11,7 @@ let package = Package(
         .library(name: "FeatherPostgresDatabase", targets: ["FeatherPostgresDatabase"]),
         .library(name: "FeatherSQLiteDatabase", targets: ["FeatherSQLiteDatabase"]),
 
-        .library(name: "HummingbirdDatabaseService", targets: ["HummingbirdDatabaseService"]),
+        .library(name: "HummingbirdDatabase", targets: ["HummingbirdDatabase"]),
         .library(name: "HummingbirdPostgres", targets: ["HummingbirdPostgres"]),
         .library(name: "HummingbirdSQLite", targets: ["HummingbirdSQLite"]),
     ],
@@ -33,21 +33,21 @@ let package = Package(
             .product(name: "SQLiteNIO", package: "sqlite-nio"),
         ]),
         
-        .target(name: "HummingbirdDatabaseService", dependencies: [
+        .target(name: "HummingbirdDatabase", dependencies: [
             .product(name: "Hummingbird", package: "hummingbird"),
             .product(name: "HummingbirdServices", package: "hummingbird-services"),
             .target(name: "FeatherDatabase"),
         ]),
         .target(name: "HummingbirdPostgres", dependencies: [
-            .target(name: "HummingbirdDatabaseService"),
+            .target(name: "HummingbirdDatabase"),
             .target(name: "FeatherPostgresDatabase"),
         ]),
         .target(name: "HummingbirdSQLite", dependencies: [
-            .target(name: "HummingbirdDatabaseService"),
+            .target(name: "HummingbirdDatabase"),
             .target(name: "FeatherSQLiteDatabase"),
         ]),
         .testTarget(name: "HummingbirdDatabaseTests", dependencies: [
-            .target(name: "HummingbirdDatabaseService"),
+            .target(name: "HummingbirdDatabase"),
         ]),
         .testTarget(name: "HummingbirdPostgresTests", dependencies: [
             .target(name: "HummingbirdPostgres"),

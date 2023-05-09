@@ -1,5 +1,5 @@
 import Hummingbird
-import HummingbirdDatabaseService
+import HummingbirdDatabase
 import Logging
 import NIO
 import XCTest

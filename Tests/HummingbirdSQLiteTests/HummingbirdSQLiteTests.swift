@@ -1,5 +1,5 @@
 import Hummingbird
-import HummingbirdDatabaseService
+import HummingbirdDatabase
 import HummingbirdSQLite
 import FeatherDatabase
 import FeatherSQLiteDatabase

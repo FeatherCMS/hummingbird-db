@@ -1,5 +1,5 @@
 import Hummingbird
-import HummingbirdDatabaseService
+import HummingbirdDatabase
 import FeatherDatabase
 import Logging
 import NIO
