@@ -1,4 +1,4 @@
-public struct HBDatabaseQuery {
+public struct FeatherDatabaseQuery {
     public let unsafeSQL: String
     public let bindings: [any Encodable]
 

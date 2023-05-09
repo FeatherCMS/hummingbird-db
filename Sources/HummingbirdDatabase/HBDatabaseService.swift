@@ -1,3 +1,4 @@
+import FeatherDatabase
 import Logging
 import NIOCore
 
@@ -6,7 +7,7 @@ public protocol HBDatabaseService {
     func make(
         logger: Logger,
         eventLoop: EventLoop
-    ) -> HBDatabase
+    ) -> FeatherDatabase
 
     func shutdown() throws
 }

@@ -1,5 +1,7 @@
 import Hummingbird
 import HummingbirdDatabase
+import FeatherDatabase
+import FeatherSQLiteDatabase
 import Logging
 import NIO
 import SQLiteNIO
@@ -29,7 +31,7 @@ struct HBSQLiteDatabaseService: HBDatabaseService {
     func make(
         logger: Logger,
         eventLoop: EventLoop
-    ) -> HBDatabase {
+    ) -> FeatherDatabase {
         HBSQLiteDatabase(
             service: self,
             logger: logger,

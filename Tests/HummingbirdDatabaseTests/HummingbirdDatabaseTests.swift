@@ -28,7 +28,7 @@ final class HummingbirdDatabaseTests: XCTestCase {
 
                     // SQLite
                     //            newString += "?"
-                    // PostgreSQL
+                    // Postgres
                     bindingQuery += "$"
                     bindingQuery += String(currentIndex)
 

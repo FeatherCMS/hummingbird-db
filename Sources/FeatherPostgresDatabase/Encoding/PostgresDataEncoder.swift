@@ -1,14 +1,14 @@
 import Foundation
 import PostgresNIO
 
-public final class PostgresDataEncoder {
-    public let json: PostgresJSONEncoder
+struct PostgresDataEncoder {
+    let json: PostgresJSONEncoder
 
-    public init(json: PostgresJSONEncoder = _defaultJSONEncoder) {
+    init(json: PostgresJSONEncoder = _defaultJSONEncoder) {
         self.json = json
     }
 
-    public func encode(_ value: Encodable) throws -> PostgresData {
+    func encode(_ value: Encodable) throws -> PostgresData {
         if let encodable = value as? PostgresEncodable {
             var buffer: ByteBuffer = .init()
             try encodable.encode(into: &buffer, context: .default)

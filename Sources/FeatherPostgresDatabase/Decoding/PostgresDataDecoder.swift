@@ -1,7 +1,7 @@
 import Foundation
 import PostgresNIO
 
-struct PostgreSQLDataDecoder {
+struct PostgresDataDecoder {
 
     enum Error: Swift.Error, CustomStringConvertible {
         case unexpectedDataType(PostgresDataType, expected: String)
@@ -59,10 +59,10 @@ final class _Decoder: Decoder, SingleValueDecodingContainer {
     var codingPath: [CodingKey] { [] }
     var userInfo: [CodingUserInfoKey: Any] { [:] }
 
-    let dataDecoder: PostgreSQLDataDecoder
+    let dataDecoder: PostgresDataDecoder
     let data: PostgresData
 
-    init(decoder: PostgreSQLDataDecoder, data: PostgresData) {
+    init(decoder: PostgresDataDecoder, data: PostgresData) {
         self.dataDecoder = decoder
         self.data = data
     }
@@ -102,7 +102,7 @@ final class _Decoder: Decoder, SingleValueDecodingContainer {
 
 struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
     let data: [PostgresData]
-    let dataDecoder: PostgreSQLDataDecoder
+    let dataDecoder: PostgresDataDecoder
     var codingPath: [CodingKey] { [] }
     var count: Int? { data.count }
     var isAtEnd: Bool { currentIndex >= data.count }

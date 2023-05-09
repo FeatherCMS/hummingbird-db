@@ -21,7 +21,7 @@
     {
       "identity" : "hummingbird-services",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FeatherCMS/hummingbird-services",
+      "location" : "https://github.com/feathercms/hummingbird-services",
       "state" : {
         "branch" : "main",
         "revision" : "672d78efe708258e68900cdd9f074fc7dc77fa47"

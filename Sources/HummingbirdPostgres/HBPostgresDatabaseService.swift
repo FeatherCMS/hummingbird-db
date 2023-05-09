@@ -1,12 +1,13 @@
 import Hummingbird
 import HummingbirdDatabase
+import FeatherDatabase
 import Logging
 import NIO
 import PostgresNIO
 
-struct HBPostgreSQLDatabaseService: HBDatabaseService {
+struct HBPostgresDatabaseService: HBDatabaseService {
 
-    let poolGroup: HBConnectionPoolGroup<HBPostgreSQLConnectionSource>
+    let poolGroup: HBConnectionPoolGroup<HBPostgresConnectionSource>
 
     init(
         configuration: PostgresConnection.Configuration,
@@ -25,8 +26,8 @@ struct HBPostgreSQLDatabaseService: HBDatabaseService {
     func make(
         logger: Logger,
         eventLoop: EventLoop
-    ) -> HBDatabase {
-        HBPostgreSQLDatabase(
+    ) -> FeatherDatabase {
+        HBPostgresDatabase(
             service: self,
             logger: logger,
             eventLoop: eventLoop

@@ -1,19 +1,28 @@
 import Hummingbird
 import HummingbirdDatabase
+import FeatherDatabase
 import Logging
 import NIO
 import PostgresNIO
 import XCTest
 
-@testable import HummingbirdPostgreSQL
+@testable import HummingbirdPostgres
 
-extension HBDatabaseQuery {
+struct Todo: Codable {
+    var id: UUID
+    var title: String
+    var order: Int?
+    var url: String
+    var completed: Bool?
+}
+
+extension FeatherDatabaseQuery {
 
     static func insert(
         into table: String,
         keys: [String],
         bindings: any Encodable...
-    ) -> HBDatabaseQuery {
+    ) -> FeatherDatabaseQuery {
         let t = "`\(table)`"
         let k = keys.map { "`\($0)`" }.joined(separator: ",")
         let b = (0..<keys.count).map { ":\($0):" }.joined(separator: ",")
@@ -22,7 +31,7 @@ extension HBDatabaseQuery {
     }
 }
 
-final class HummingbirdPostgreSQLTests: XCTestCase {
+final class HummingbirdPostgresTests: XCTestCase {
 
     func testExample() async throws {
         let env = ProcessInfo.processInfo.environment
@@ -35,7 +44,7 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             port = customPort
         }
 
-        app.services.setUpPostgreSQLDatabase(
+        app.services.setUpPostgresDatabase(
             configuration: .init(
                 host: env["PG_HOST"] ?? "127.0.0.1",
                 port: port,
@@ -48,20 +57,17 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
             logger: app.logger
         )
 
-        guard let db = app.db as? HBPostgreSQLDatabase else {
-            return XCTFail()
-        }
         do {
 
-            //        switch app.db.type {
-            //        case .postgresql:
-            //            print("postgresql")
-            //        case .sqlite:
-            //            print("sqlite")
-            //        }
+//        switch app.db.type {
+//        case .postgres:
+//            print("postgres")
+//        case .sqlite:
+//            print("sqlite")
+//        }
 
             for _ in 1...10 {
-                try await db.execute(
+                try await app.db.execute(
                     .insert(
                         into: "todos",
                         keys: ["id", "title", "url", "order"],
@@ -73,7 +79,7 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
                 )
             }
 
-            try await db.execute([
+            try await app.db.execute([
                 .init(
                     unsafeSQL:
                         """
@@ -105,7 +111,7 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
                 ),
             ])
 
-            let todos = try await db.execute(
+            let todos = try await app.db.execute(
                 .init(
                     unsafeSQL: "SELECT * FROM todos"
                 ),
@@ -156,10 +162,3 @@ final class HummingbirdPostgreSQLTests: XCTestCase {
     }
 }
 
-struct Todo: Codable {
-    var id: UUID
-    var title: String
-    var order: Int?
-    var url: String
-    var completed: Bool?
-}

@@ -1,29 +1,32 @@
-import HummingbirdDatabase
+import FeatherDatabase
 import Logging
 import NIOCore
 import PostgresNIO
 
-struct HBPostgreSQLDatabase: HBDatabase {
+public struct FeatherPostgresDatabase: FeatherDatabase {
 
-    let service: HBPostgreSQLDatabaseService
+    public let type: FeatherDatabaseType = .postgres
+
+    let connection: PostgresConnection
     let logger: Logger
     let eventLoop: EventLoop
-
-    let type: HBDatabaseType = .postgresql
-
-    private func run<T>(
-        _ block: @escaping ((PostgresConnection) async throws -> T)
-    ) async throws -> T {
-        let pool = service.poolGroup.getConnectionPool(on: eventLoop)
-        return try await pool.lease(logger: logger, process: block)
+    
+    public init(
+        connection: PostgresConnection,
+        logger: Logger,
+        eventLoop: EventLoop
+    ) {
+        self.connection = connection
+        self.logger = logger
+        self.eventLoop = eventLoop
     }
 
     private func prepare(
-        query: HBDatabaseQuery
+        query: FeatherDatabaseQuery
     ) throws -> (String, PostgresBindings) {
         var patterns: [String: PostgresData] = [:]
 
-        let encoder = PostgreSQLRowEncoder()
+        let encoder = PostgresRowEncoder()
         for b in query.bindings {
             let res = try encoder.encode(b)
             for item in res {
@@ -62,41 +65,37 @@ struct HBPostgreSQLDatabase: HBDatabase {
             }
         }
         if isOpened {  //} || currentIndex - 1 != patterns.count { // strict mode?
-            throw HBDatabaseError.binding
+            throw FeatherDatabaseError.binding
         }
         return (bindingQuery, currentBindings)
     }
 
-    func execute(_ queries: [HBDatabaseQuery]) async throws {
-        try await run { connection in
-            for query in queries {
-                let q = try prepare(query: query)
-                try await connection.query(
-                    .init(unsafeSQL: q.0, binds: q.1),
-                    logger: logger
-                )
-            }
-        }
-    }
-
-    func execute<T: Decodable>(
-        _ query: HBDatabaseQuery,
-        rowType: T.Type
-    ) async throws -> [T] {
-        try await run { connection in
+    public func execute(_ queries: [FeatherDatabaseQuery]) async throws {
+        for query in queries {
             let q = try prepare(query: query)
-            let stream = try await connection.query(
+            try await connection.query(
                 .init(unsafeSQL: q.0, binds: q.1),
                 logger: logger
             )
-            let decoder = PostgreSQLRowDecoder()
-            var res: [T] = []
-            for try await row in stream {
-                let racRow = row.makeRandomAccess()
-                let item = try decoder.decode(T.self, from: racRow)
-                res.append(item)
-            }
-            return res
         }
+    }
+
+    public func execute<T: Decodable>(
+        _ query: FeatherDatabaseQuery,
+        rowType: T.Type
+    ) async throws -> [T] {
+        let q = try prepare(query: query)
+        let stream = try await connection.query(
+            .init(unsafeSQL: q.0, binds: q.1),
+            logger: logger
+        )
+        let decoder = PostgresRowDecoder()
+        var res: [T] = []
+        for try await row in stream {
+            let racRow = row.makeRandomAccess()
+            let item = try decoder.decode(T.self, from: racRow)
+            res.append(item)
+        }
+        return res
     }
 }
