@@ -52,10 +52,51 @@ final class FeatherSQLiteDatabaseTests: XCTestCase {
             eventLoop: eventLoop
         )
 
-        try await block(db)
+        do {
+            try await block(db)
+        }
+        catch {
+            XCTFail(error.localizedDescription)
+        }
         try await conn.close().get()
         try await threadPool.shutdownGracefully()
         try await eventLoopGroup.shutdownGracefully()
+    }
+
+    func testInterpolation() async throws {
+        try await runTest { db in
+            struct Sample: Codable {
+                let foo: Int
+            }
+            try await db.execute(
+                #"CREATE TABLE IF NOT EXISTS "scores" ("score" INTEGER NOT NULL);"#,
+                .init(
+                    unsafeSQL: #"INSERT INTO scores (score) VALUES (:0:), (:1:);"#,
+                    bindings: 42, 6
+                ),
+                .init(
+                    unsafeSQL: #"INSERT INTO scores (score) VALUES (:0:), (:1:);"#,
+                    bindings: [42, 6]
+                ),
+                .init(
+                    unsafeSQL: #"INSERT INTO scores (score) VALUES (?), (?);"#,
+                    bindings: [42, 6]
+                ),
+                .init(
+                    unsafeSQL: #"INSERT INTO scores (score) VALUES (:foo:), (:bar:);"#,
+                    bindings: ["foo": 42, "bar": 6]
+                ),
+                .init(
+                    unsafeSQL: #"INSERT INTO scores (score) VALUES (:foo:);"#,
+                    bindings: Sample(foo: 42)
+                ),
+                .init(
+                    unsafeSQL: #"INSERT INTO scores (score) VALUES (?), (?);"#,
+                    bindings: 42, 6
+                ),
+                "INSERT INTO scores (score) VALUES (\(42)), (\(6));"
+            )
+        }
     }
 
     func testExample() async throws {

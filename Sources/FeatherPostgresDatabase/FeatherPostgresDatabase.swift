@@ -33,24 +33,43 @@ public struct FeatherPostgresDatabase: FeatherDatabase {
                 patterns[item.0] = item.1
             }
         }
+                
         var bindingQuery = ""
         var isOpened = false
         var currentKey = ""
-        var currentIndex = 1
+        var currentIndex = 0
         var currentBindings = PostgresBindings()
 
+        var index = 0
         for c in query.unsafeSQL {
+            if c == "?" {
+                bindingQuery += "$\(index + 1)"
+                if query.bindings.indices.contains(index) {
+                    let b = query.bindings[index]
+                    let v = try encoder.encode(b)
+                    if let binding = v.first?.1 {
+                        currentBindings.append(binding)
+                    }
+                    else {
+                        currentBindings.append(.null)
+                    }
+                    index += 1
+                }
+                else {
+                    currentBindings.append(.null)
+                    index += 1
+                }
+                continue
+            }
             if c == ":" {
                 if isOpened {
-                    bindingQuery += "$"
-                    bindingQuery += String(currentIndex)
+                    bindingQuery += "$\(currentIndex + 1)"
                     if let binding = patterns[currentKey] {
                         currentBindings.append(binding)
                     }
                     else {
                         currentBindings.append(.null)
                     }
-
                     currentKey = ""
                     currentIndex += 1
                 }
