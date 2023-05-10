@@ -40,7 +40,27 @@ public struct FeatherSQLiteDatabase: FeatherDatabase {
         var currentIndex = 1
         var currentBindings: [SQLiteData] = []
 
+        var index = 0
         for c in query.unsafeSQL {
+            if c == "?" {
+                bindingQuery += "?"
+                if query.bindings.indices.contains(index) {
+                    let b = query.bindings[index]
+                    let v = try encoder.encode(b)
+                    if let binding = v.first?.1 {
+                        currentBindings.append(binding)
+                    }
+                    else {
+                        currentBindings.append(.null)
+                    }
+                    index += 1
+                }
+                else {
+                    currentBindings.append(.null)
+                    index += 1
+                }
+                continue
+            }
             if c == ":" {
                 if isOpened {
                     bindingQuery += "?"
