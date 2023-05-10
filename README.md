@@ -25,3 +25,5 @@ Database provider services
 - [SQLiteKit](https://github.com/vapor/sqlite-kit/tree/main/Sources/SQLiteKit)
 - [FluentSQLiteDriver](https://github.com/vapor/fluent-sqlite-driver)
 - [FluentPostgresDriver](https://github.com/vapor/fluent-postgres-driver)
+
+Special thanks to [Joannis Orlandos](https://github.com/joannis) for the query string interpolation feedback & implementation sample.
