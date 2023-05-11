@@ -1,8 +1,6 @@
 import Hummingbird
 import HummingbirdDatabase
-import HummingbirdSQLite
-import FeatherDatabase
-import FeatherSQLiteDatabase
+import HummingbirdSQLiteDatabase
 import Logging
 import NIO
 import XCTest
@@ -10,7 +8,7 @@ import XCTest
 final class HummingbirdSQLiteTests: XCTestCase {
 
     private func runTest(
-        _ block: (FeatherDatabase) async throws -> Void
+        _ block: (HBDatabase) async throws -> Void
     ) async throws {
         let path = FileManager
             .default
@@ -18,7 +16,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension("sqlite")
             .absoluteString
-        
+
         let app = HBApplication()
 
         var logger = Logger(label: "sqlite-logger")
@@ -30,7 +28,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
             eventLoopGroup: app.eventLoopGroup,
             logger: logger
         )
-        
+
         try await block(app.db)
         try app.shutdownApplication()
     }

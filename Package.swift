@@ -8,8 +8,8 @@ let package = Package(
     ],
     products: [
         .library(name: "HummingbirdDatabase", targets: ["HummingbirdDatabase"]),
-        .library(name: "HummingbirdPostgres", targets: ["HummingbirdPostgres"]),
-        .library(name: "HummingbirdSQLite", targets: ["HummingbirdSQLite"]),
+        .library(name: "HummingbirdPostgresDatabase", targets: ["HummingbirdPostgresDatabase"]),
+        .library(name: "HummingbirdSQLiteDatabase", targets: ["HummingbirdSQLiteDatabase"]),
     ],
     dependencies: [
         .package(url: "https://github.com/hummingbird-project/hummingbird", from: "1.5.0"),
@@ -22,22 +22,19 @@ let package = Package(
             .product(name: "HummingbirdServices", package: "hummingbird-services"),
             .product(name: "FeatherDatabase", package: "feather-database"),
         ]),
-        .target(name: "HummingbirdPostgres", dependencies: [
+        .target(name: "HummingbirdPostgresDatabase", dependencies: [
             .target(name: "HummingbirdDatabase"),
             .product(name: "FeatherPostgresDatabase", package: "feather-database"),
         ]),
-        .target(name: "HummingbirdSQLite", dependencies: [
+        .target(name: "HummingbirdSQLiteDatabase", dependencies: [
             .target(name: "HummingbirdDatabase"),
             .product(name: "FeatherSQLiteDatabase", package: "feather-database"),
         ]),
-        .testTarget(name: "HummingbirdDatabaseTests", dependencies: [
-            .target(name: "HummingbirdDatabase"),
+        .testTarget(name: "HummingbirdPostgresDatabaseTests", dependencies: [
+            .target(name: "HummingbirdPostgresDatabase"),
         ]),
-        .testTarget(name: "HummingbirdPostgresTests", dependencies: [
-            .target(name: "HummingbirdPostgres"),
-        ]),
-        .testTarget(name: "HummingbirdSQLiteTests", dependencies: [
-            .target(name: "HummingbirdSQLite"),
+        .testTarget(name: "HummingbirdSQLiteDatabaseTests", dependencies: [
+            .target(name: "HummingbirdSQLiteDatabase"),
         ]),
     ]
 )

@@ -1,12 +1,8 @@
 import Hummingbird
-import HummingbirdDatabase
-import FeatherDatabase
+import HummingbirdPostgresDatabase
 import Logging
-import NIO
 import PostgresNIO
 import XCTest
-
-@testable import HummingbirdPostgres
 
 struct Todo: Codable {
     var id: UUID
@@ -14,21 +10,6 @@ struct Todo: Codable {
     var order: Int?
     var url: String
     var completed: Bool?
-}
-
-extension FeatherDatabaseQuery {
-
-    static func insert(
-        into table: String,
-        keys: [String],
-        bindings: any Encodable...
-    ) -> FeatherDatabaseQuery {
-        let t = "`\(table)`"
-        let k = keys.map { "`\($0)`" }.joined(separator: ",")
-        let b = (0..<keys.count).map { ":\($0):" }.joined(separator: ",")
-        let sql = "INSERT INTO \(t) (\(k)) VALUES (\(b))"
-        return .init(unsafeSQL: sql, bindings: bindings)
-    }
 }
 
 final class HummingbirdPostgresTests: XCTestCase {
@@ -59,25 +40,12 @@ final class HummingbirdPostgresTests: XCTestCase {
 
         do {
 
-//        switch app.db.type {
-//        case .postgres:
-//            print("postgres")
-//        case .sqlite:
-//            print("sqlite")
-//        }
-
-            for _ in 1...10 {
-                try await app.db.execute(
-                    .insert(
-                        into: "todos",
-                        keys: ["id", "title", "url", "order"],
-                        bindings: UUID(),
-                        "foo",
-                        "bar",
-                        42
-                    )
-                )
-            }
+            //        switch app.db.type {
+            //        case .postgres:
+            //            print("postgres")
+            //        case .sqlite:
+            //            print("sqlite")
+            //        }
 
             try await app.db.execute([
                 .init(
@@ -111,14 +79,20 @@ final class HummingbirdPostgresTests: XCTestCase {
                 ),
             ])
 
+            try await app.db.execute(
+                """
+                INSERT INTO
+                    todos (id, title)
+                VALUES
+                    (\(UUID()), \("foo")
+                """
+            )
             let todos = try await app.db.execute(
-                .init(
-                    unsafeSQL: "SELECT * FROM todos"
-                ),
+                "SELECT * FROM todos",
                 rowType: Todo.self
             )
 
-            XCTAssertEqual(todos.count, 10)
+            XCTAssertEqual(todos.count, 1)
 
             let newTodo = Todo(
                 id: .init(),
@@ -161,4 +135,3 @@ final class HummingbirdPostgresTests: XCTestCase {
         try app.shutdownApplication()
     }
 }
-

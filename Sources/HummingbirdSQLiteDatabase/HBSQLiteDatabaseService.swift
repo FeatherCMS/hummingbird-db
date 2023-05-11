@@ -1,22 +1,27 @@
+import FeatherDatabase
+import FeatherSQLiteDatabase
 import Hummingbird
 import HummingbirdDatabase
-import FeatherDatabase
 import Logging
 import NIO
-import PostgresNIO
+import SQLiteNIO
 
-struct HBPostgresDatabaseService: HBDatabaseService {
+struct HBSQLiteDatabaseService: HBDatabaseService {
 
-    let poolGroup: HBConnectionPoolGroup<HBPostgresConnectionSource>
+    let poolGroup: HBConnectionPoolGroup<HBSQLiteConnectionSource>
 
     init(
-        configuration: PostgresConnection.Configuration,
+        path: String,
         maxConnections: Int,
+        threadPool: NIOThreadPool,
         eventLoopGroup: EventLoopGroup,
         logger: Logger
     ) {
         self.poolGroup = .init(
-            source: .init(configuration: configuration),
+            source: .init(
+                configuration: .file(path: path),
+                threadPool: threadPool
+            ),
             maxConnections: maxConnections,
             eventLoopGroup: eventLoopGroup,
             logger: logger
@@ -27,7 +32,7 @@ struct HBPostgresDatabaseService: HBDatabaseService {
         logger: Logger,
         eventLoop: EventLoop
     ) -> FeatherDatabase {
-        HBPostgresDatabase(
+        HBSQLiteDatabase(
             service: self,
             logger: logger,
             eventLoop: eventLoop

@@ -1,5 +1,5 @@
-import Hummingbird
 import FeatherDatabase
+import Hummingbird
 import HummingbirdServices
 import Logging
 import NIOCore
