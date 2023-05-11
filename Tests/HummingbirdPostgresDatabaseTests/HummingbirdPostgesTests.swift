@@ -1,8 +1,8 @@
 import Hummingbird
 import HummingbirdPostgresDatabase
-import XCTest
-import PostgresNIO
 import Logging
+import PostgresNIO
+import XCTest
 
 struct Todo: Codable {
     var id: UUID
@@ -40,12 +40,12 @@ final class HummingbirdPostgresTests: XCTestCase {
 
         do {
 
-//        switch app.db.type {
-//        case .postgres:
-//            print("postgres")
-//        case .sqlite:
-//            print("sqlite")
-//        }
+            //        switch app.db.type {
+            //        case .postgres:
+            //            print("postgres")
+            //        case .sqlite:
+            //            print("sqlite")
+            //        }
 
             try await app.db.execute([
                 .init(
@@ -78,8 +78,9 @@ final class HummingbirdPostgresTests: XCTestCase {
                         """
                 ),
             ])
-            
-            try await app.db.execute("""
+
+            try await app.db.execute(
+                """
                 INSERT INTO
                     todos (id, title)
                 VALUES
@@ -134,4 +135,3 @@ final class HummingbirdPostgresTests: XCTestCase {
         try app.shutdownApplication()
     }
 }
-

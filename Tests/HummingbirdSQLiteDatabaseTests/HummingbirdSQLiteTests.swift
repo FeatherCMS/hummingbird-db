@@ -16,7 +16,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension("sqlite")
             .absoluteString
-        
+
         let app = HBApplication()
 
         var logger = Logger(label: "sqlite-logger")
@@ -28,7 +28,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
             eventLoopGroup: app.eventLoopGroup,
             logger: logger
         )
-        
+
         try await block(app.db)
         try app.shutdownApplication()
     }

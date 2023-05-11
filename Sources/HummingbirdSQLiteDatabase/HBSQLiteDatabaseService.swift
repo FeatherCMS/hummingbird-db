@@ -1,7 +1,7 @@
-import Hummingbird
-import HummingbirdDatabase
 import FeatherDatabase
 import FeatherSQLiteDatabase
+import Hummingbird
+import HummingbirdDatabase
 import Logging
 import NIO
 import SQLiteNIO

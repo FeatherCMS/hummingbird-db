@@ -1,6 +1,6 @@
+import FeatherDatabase
 import Hummingbird
 import HummingbirdServices
-import FeatherDatabase
 import Logging
 
 extension HBApplication.Services {

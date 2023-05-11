@@ -1,6 +1,6 @@
+import FeatherDatabase
 import Hummingbird
 import HummingbirdDatabase
-import FeatherDatabase
 import Logging
 import NIO
 import PostgresNIO
