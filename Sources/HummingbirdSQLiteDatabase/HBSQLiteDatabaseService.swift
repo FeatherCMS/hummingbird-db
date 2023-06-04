@@ -11,7 +11,7 @@ struct HBSQLiteDatabaseService: HBDatabaseService {
     let poolGroup: HBConnectionPoolGroup<HBSQLiteConnectionSource>
 
     init(
-        path: String,
+        storage: SQLiteConnection.Storage,
         maxConnections: Int,
         threadPool: NIOThreadPool,
         eventLoopGroup: EventLoopGroup,
@@ -19,7 +19,7 @@ struct HBSQLiteDatabaseService: HBDatabaseService {
     ) {
         self.poolGroup = .init(
             source: .init(
-                configuration: .file(path: path),
+                configuration: storage,
                 threadPool: threadPool
             ),
             maxConnections: maxConnections,

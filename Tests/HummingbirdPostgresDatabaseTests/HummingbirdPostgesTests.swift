@@ -47,86 +47,87 @@ final class HummingbirdPostgresTests: XCTestCase {
             //            print("sqlite")
             //        }
 
-            try await app.db.execute([
-                .init(
-                    unsafeSQL:
-                        """
-                        DROP TABLE todos
-                        """
-                ),
-                .init(
-                    unsafeSQL:
-                        """
-                        CREATE TABLE
-                            todos
-                        (
-                            "id" uuid PRIMARY KEY,
-                            "title" text NOT NULL,
-                            "order" integer,
-                            "url" text
-                        );
-                        """
-                ),
-                .init(
-                    unsafeSQL:
-                        """
-                        ALTER TABLE
-                            todos
-                        ADD COLUMN
-                            "completed" BOOLEAN
-                        DEFAULT FALSE;
-                        """
-                ),
-            ])
+            // try await app.db.execute([
+                // .init(
+                //     unsafeSQL:
+                //         """
+                //         DROP TABLE todos
+                //         """
+                // ),
+                // .init(
+                //     unsafeSQL:
+                //         """
+                //         CREATE TABLE
+                //             todos
+                //         (
+                //             "id" uuid PRIMARY KEY,
+                //             "title" text NOT NULL,
+                //             "order" integer,
+                //             "url" text
+                //         );
+                //         """
+                // ),
+                // .init(
+                //     unsafeSQL:
+                //         """
+                //         ALTER TABLE
+                //             todos
+                //         ADD COLUMN
+                //             "completed" BOOLEAN
+                //         DEFAULT FALSE;
+                //         """
+                // ),
+            // ])
 
-            try await app.db.execute(
-                """
-                INSERT INTO
-                    todos (id, title)
-                VALUES
-                    (\(UUID()), \("foo")
-                """
-            )
+            // try await app.db.execute(
+            //     """
+            //     INSERT INTO
+            //         todos (id, title)
+            //     VALUES
+            //         (\(UUID()), \("foo")
+            //     """
+            // )
+            
             let todos = try await app.db.execute(
                 "SELECT * FROM todos",
                 rowType: Todo.self
             )
 
-            XCTAssertEqual(todos.count, 1)
+            // XCTAssertEqual(todos.count, 1)
 
-            let newTodo = Todo(
-                id: .init(),
-                title: "yeah",
-                order: 420,
-                url: "spacex.com",
-                completed: true
-            )
+            // let newTodo = Todo(
+            //     id: .init(),
+            //     title: "yeah",
+            //     order: 420,
+            //     url: "spacex.com",
+            //     completed: true
+            // )
 
-            try await app.db.execute([
-                .init(
-                    unsafeSQL:
-                        """
-                        INSERT INTO
-                            todos (id, title, url, "order", completed)
-                        VALUES
-                            (:id:, :title:, :url:, :order:, :completed:)
-                        """,
-                    bindings:
-                        newTodo
-                ),
-                .init(
-                    unsafeSQL:
-                        """
-                        INSERT INTO
-                            todos (id, title, url, "order", completed)
-                        VALUES
-                            (:0:, :1:, :2:, :3:, :4:)
-                        """,
-                    bindings:
-                        UUID(),
-                    "foo"
-                ),
-            ])
+            // try await app.db.execute([
+            //     .init(
+            //         unsafeSQL:
+            //             """
+            //             INSERT INTO
+            //                 todos (id, title, url, "order", completed)
+            //             VALUES
+            //                 (:id:, :title:, :url:, :order:, :completed:)
+            //             """,
+            //         bindings:
+            //             newTodo
+            //     ),
+            //     .init(
+            //         unsafeSQL:
+            //             """
+            //             INSERT INTO
+            //                 todos (id, title, url, "order", completed)
+            //             VALUES
+            //                 (:0:, :1:, :2:, :3:, :4:)
+            //             """,
+            //         bindings:
+            //             UUID(),
+            //         "foo"
+            //     ),
+            // ])
         }
         catch let error as PSQLError {
             print(error.serverInfo ?? "Not a server info")

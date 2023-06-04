@@ -10,12 +10,12 @@ final class HummingbirdSQLiteTests: XCTestCase {
     private func runTest(
         _ block: (HBDatabase) async throws -> Void
     ) async throws {
-        let path = FileManager
-            .default
-            .temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
-            .appendingPathExtension("sqlite")
-            .absoluteString
+        // let path = FileManager
+        //     .default
+        //     .temporaryDirectory
+        //     .appendingPathComponent(UUID().uuidString)
+        //     .appendingPathExtension("sqlite")
+        //     .absoluteString
 
         let app = HBApplication()
 
@@ -23,7 +23,7 @@ final class HummingbirdSQLiteTests: XCTestCase {
         logger.logLevel = .info
 
         app.services.setUpSQLiteDatabase(
-            path: path,
+            storage: .memory,
             threadPool: app.threadPool,
             eventLoopGroup: app.eventLoopGroup,
             logger: logger
